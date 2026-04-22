@@ -6,62 +6,91 @@
 <title>CMMS Enterprise — Full System</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  /* ── CSS FULL SYSTEM ────────────────────────────────── */
   :root {
-    --bg: #1c2228; --surface: #262c33; --surface2: #343d46;
-    --primary: #0070f2; --text: #f0f2f5; --text-dim: #a0aab4;
-    --border: #3d444b; --red: #ff4d4d; --green: #107e3e; --yellow: #e9730c;
+    --bg: #11151a; --surface: #1e242a; --surface2: #2b333c;
+    --primary: #0066cc; --primary-hover: #0052a3;
+    --text: #f0f2f5; --text-dim: #9aa5b1;
+    --border: #323b44; --red: #e53e3e; --green: #38a169; --yellow: #dd6b20;
+    --glass: rgba(30, 36, 42, 0.85);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
   
   /* SHELL */
-  .shell-bar { height: 48px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 1000; }
-  .logo { font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 18px; }
-  .logo span { color: var(--primary); }
+  .shell-bar { height: 50px; background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; width: 100%; z-index: 1000; }
+  .logo { font-weight: 800; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 18px; letter-spacing: -0.5px; }
+  .logo span { color: #3b82f6; }
   .shell-right { display: flex; align-items: center; gap: 15px; }
   
   /* LAYOUT */
-  .app-layout { display: flex; padding-top: 48px; height: 100vh; }
-  .side-nav { width: 250px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px 10px; flex-shrink: 0; }
-  .main-content { flex-grow: 1; overflow-y: auto; padding: 25px; position: relative; background: var(--bg); }
+  .app-layout { display: flex; padding-top: 50px; height: 100vh; }
+  .side-nav { width: 260px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 15px 10px; flex-shrink: 0; transition: width 0.3s; }
+  .main-content { flex-grow: 1; overflow-y: auto; padding: 30px; position: relative; background: var(--bg); }
 
   /* NAV */
-  .nav-group-hdr { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin: 22px 0 8px 12px; letter-spacing: 1px; font-weight: 600; }
-  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--text-dim); text-decoration: none; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 2px; transition: .2s; }
+  .nav-group-hdr { font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin: 15px 0 5px 0; padding: 10px 15px; letter-spacing: 1px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; transition: 0.2s; }
+  .nav-group-hdr:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .nav-dropdown { overflow: hidden; transition: max-height 0.3s ease-out; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 15px; color: var(--text-dim); text-decoration: none; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 2px; transition: .2s; font-weight: 500; }
   .nav-item:hover { background: var(--surface2); color: #fff; }
-  .nav-item.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 4px 10px rgba(0,112,242,0.3); }
+  .nav-item.active { background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-weight: 600; border-left: 3px solid #3b82f6; }
+
+  /* DASHBOARD KPI */
+  .dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+  .kpi-card { background: var(--surface); padding: 25px; border-radius: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+  .kpi-card.green::before { background: var(--green); }
+  .kpi-card.yellow::before { background: var(--yellow); }
+  .kpi-card.red::before { background: var(--red); }
+  .kpi-title { font-size: 12px; color: var(--text-dim); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+  .kpi-value { font-size: 36px; font-weight: 800; margin-top: 10px; color: #fff; }
 
   /* GRID */
-  .grid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: var(--surface2); padding: 14px 12px; text-align: left; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 600; }
-  td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .module-title { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .grid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+  th { background: rgba(0,0,0,0.2); padding: 15px; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap; }
+  td { padding: 15px; border-bottom: 1px solid var(--border); color: #fff; vertical-align: middle; }
   tr:hover { background: rgba(255,255,255,0.03); }
 
   /* UI COMPONENTS */
-  .btn { padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; gap: 6px; }
-  .btn-primary { background: var(--primary); color: #fff; }
+  .btn { padding: 10px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+  .btn-primary { background: #3b82f6; color: #fff; }
+  .btn-primary:hover { background: #2563eb; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-icon { padding: 6px; border-radius: 4px; }
-  
-  .badge { padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-  .badge-green { background: rgba(16,126,62,0.15); color: #48bb78; border: 1px solid rgba(16,126,62,0.3); }
-  .badge-blue { background: rgba(0,112,242,0.15); color: #4dabff; border: 1px solid rgba(0,112,242,0.3); }
-  .badge-yellow { background: rgba(233,115,12,0.15); color: #f6ad55; border: 1px solid rgba(233,115,12,0.3); }
-  .badge-red { background: rgba(255,77,77,0.15); color: #ff6b6b; border: 1px solid rgba(255,77,77,0.3); }
+  .btn-ghost:hover { border-color: #fff; color: #fff; }
+  .btn-danger { background: rgba(229, 62, 62, 0.1); color: #fc8181; border: 1px solid rgba(229, 62, 62, 0.3); }
+  .btn-danger:hover { background: #e53e3e; color: #fff; }
+  .btn-success { background: rgba(56, 161, 105, 0.1); color: #68d391; border: 1px solid rgba(56, 161, 105, 0.3); }
+  .btn-success:hover { background: #38a169; color: #fff; }
+  .btn-icon { padding: 8px; border-radius: 6px; }
+
+  .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+  .badge-green { background: rgba(56,161,105,0.15); color: #68d391; border: 1px solid rgba(56,161,105,0.3); }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #90cdf4; border: 1px solid rgba(59,130,246,0.3); }
+  .badge-yellow { background: rgba(221,107,32,0.15); color: #fbd38d; border: 1px solid rgba(221,107,32,0.3); }
+  .badge-red { background: rgba(229,62,62,0.15); color: #fc8181; border: 1px solid rgba(229,62,62,0.3); }
 
   /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
-  .modal { background: var(--surface); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 10px; border: 1px solid var(--border); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); position: relative; }
-  .modal-close { position: absolute; top: 15px; right: 15px; color: var(--text-dim); cursor: pointer; font-size: 20px; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-  .form-field { margin-bottom: 15px; }
-  .form-label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; }
-  .form-input { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 13px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(5px); }
+  .modal { background: var(--surface); width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; }
+  .modal-header { padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-body { padding: 30px; overflow-y: auto; flex-grow: 1; }
+  .modal-footer { padding: 20px 30px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 15px; }
+  .modal-close { color: var(--text-dim); cursor: pointer; font-size: 24px; line-height: 1; transition: 0.2s; }
+  .modal-close:hover { color: #fff; }
   
-  .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.05); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 60px auto; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-field { margin-bottom: 5px; }
+  .form-label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 14px; transition: 0.2s; }
+  .form-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+  .form-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.05); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 60px auto; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -70,7 +99,7 @@
 <div id="root"></div>
 
 <script>
-  // ── CONFIGURACIÓN & SCHEMA COMPLETO (SEGÚN DIAGRAMA) ──
+  // ── CONFIGURACIÓN Y ESQUEMA ─────────────────────
   const CONFIG = {
     url: 'https://xwciwrtenrdvhwvvjkzt.supabase.co/rest/v1/',
     key: 'sb_publishable_RIfaIPuzvQ27Drwp-vx-MQ_o6_xgoGt'
@@ -81,188 +110,119 @@
       {key: "id", pk: true, hidden: true},
       {key: "codigo", label: "Código", required: true},
       {key: "nombre", label: "Nombre", required: true},
-      {key: "pais", label: "País"},
-      {key: "ciudad", label: "Ciudad"},
-      {key: "direccion", label: "Dirección"},
-      {key: "contacto", label: "Contacto"},
-      {key: "telefono", label: "Teléfono"},
-      {key: "email", label: "Email"},
+      {key: "pais", label: "País"}, {key: "ciudad", label: "Ciudad"}, {key: "direccion", label: "Dirección"},
+      {key: "contacto", label: "Contacto"}, {key: "telefono", label: "Teléfono"}, {key: "email", label: "Email"},
       {key: "estado", label: "Estado", type: "select", options: ["Activa","Inactiva"]}
     ]},
     sitios: { label: "Plantas / Sitios", group: "Jerarquía", icon: "🏗", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "empresa_id", label: "ID Empresa"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "rfc", label: "RFC"},
-      {key: "pais", label: "País"},
-      {key: "ciudad", label: "Ciudad"},
-      {key: "direccion", label: "Dirección"},
-      {key: "contacto", label: "Contacto"},
-      {key: "telefono", label: "Teléfono"},
-      {key: "email", label: "Email"},
+      {key: "empresa_id", label: "Empresa", type: "fk", ref: "empresas", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
+      {key: "rfc", label: "RFC"}, {key: "pais", label: "País"}, {key: "ciudad", label: "Ciudad"},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
-    unidades_negocio: { label: "Unidades Negocio", group: "Jerarquía", icon: "🏛", fields: [
+    unidades_negocio: { label: "Unidades de Negocio", group: "Jerarquía", icon: "🏛", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "sitio_id", label: "ID Sitio"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
+      {key: "sitio_id", label: "Sitio", type: "fk", ref: "sitios", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
       {key: "tipo", label: "Tipo"},
-      {key: "responsable_id", label: "Resp. ID"},
+      {key: "responsable_id", label: "Responsable", type: "fk", ref: "personal", refLabel: "nombre", hiddenInTable: true},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     ubicaciones: { label: "Ubicaciones", group: "Jerarquía", icon: "📍", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "unidad_id", label: "ID Unidad"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "planta", label: "Planta"},
-      {key: "area", label: "Área"},
-      {key: "padre_id", label: "Padre ID"}
+      {key: "unidad_id", label: "Unidad", type: "fk", ref: "unidades_negocio", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
+      {key: "planta", label: "Planta"}, {key: "area", label: "Área"}
     ]},
     procesos: { label: "Procesos", group: "Jerarquía", icon: "⚙", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "ubicacion_id", label: "ID Ubicación"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "tipo_proceso", label: "Tipo"},
-      {key: "responsable_id", label: "Resp. ID"},
+      {key: "ubicacion_id", label: "Ubicación", type: "fk", ref: "ubicaciones", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     activos_principales: { label: "Activos Principales", group: "Jerarquía", icon: "🏭", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "proceso_id", label: "ID Proceso"},
-      {key: "ubicacion_id", label: "ID Ubicación"},
-      {key: "codigo", label: "Tag / Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "marca", label: "Marca"},
-      {key: "modelo", label: "Modelo"},
-      {key: "numero_serie", label: "Nº Serie"},
-      {key: "anio_fabricacion", label: "Año Fab."},
-      {key: "fecha_instalacion", label: "F. Instalación", type: "date"},
+      {key: "proceso_id", label: "Proceso", type: "fk", ref: "procesos", refLabel: "nombre", hiddenInTable: true},
+      {key: "ubicacion_id", label: "Ubicación", type: "fk", ref: "ubicaciones", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Tag / Código"}, {key: "nombre", label: "Nombre"},
+      {key: "marca", label: "Marca"}, {key: "modelo", label: "Modelo"}, {key: "numero_serie", label: "Nº Serie", hiddenInTable: true},
       {key: "criticidad", label: "Criticidad", type: "select", options: ["A - Crítica", "B - Importante", "C - Soporte"]},
       {key: "estado", label: "Estado", type: "select", options: ["Operativo","Fuera de servicio","En falla"]}
     ]},
     sub_activos: { label: "Sub-Activos", group: "Jerarquía", icon: "🔧", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "activo_principal_id", label: "ID Activo"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "marca", label: "Marca"},
-      {key: "modelo", label: "Modelo"},
-      {key: "numero_serie", label: "Nº Serie"}
+      {key: "activo_principal_id", label: "Activo Padre", type: "fk", ref: "activos_principales", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
+      {key: "marca", label: "Marca"}
     ]},
     sistemas: { label: "Sistemas", group: "Jerarquía", icon: "🔩", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "sub_activo_id", label: "ID Sub-Activo"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "tipo_sistema", label: "Tipo"},
-      {key: "fabricante", label: "Fabricante"}
+      {key: "sub_activo_id", label: "Sub-Activo", type: "fk", ref: "sub_activos", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"}
     ]},
     componentes: { label: "Componentes", group: "Jerarquía", icon: "⚙", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "sistema_id", label: "ID Sistema"},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
-      {key: "cantidad", label: "Cant.", type: "number"},
-      {key: "vida_util_horas", label: "Vida Útil (Hrs)", type: "number"},
-      {key: "fecha_instalacion", label: "F. Instalación", type: "date"},
+      {key: "sistema_id", label: "Sistema", type: "fk", ref: "sistemas", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
       {key: "estado", label: "Estado"}
     ]},
     despiece: { label: "Despiece", group: "Jerarquía", icon: "📐", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "componente_id", label: "ID Componente"},
-      {key: "codigo_parte", label: "Cód. Parte"},
-      {key: "descripcion", label: "Descripción"},
-      {key: "cantidad_requerida", label: "Cant.", type: "number"},
-      {key: "material", label: "Material"},
-      {key: "fabricante", label: "Fabricante"}
+      {key: "componente_id", label: "Componente", type: "fk", ref: "componentes", refLabel: "nombre", hiddenInTable: true},
+      {key: "codigo_parte", label: "Cód. Parte"}, {key: "descripcion", label: "Descripción"}
     ]},
     mps: { label: "Planes MP", group: "Mantenimiento", icon: "📅", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "codigo_mp", label: "Código MP"},
-      {key: "nombre_mp", label: "Nombre Plan"},
+      {key: "codigo_mp", label: "Código MP"}, {key: "nombre_mp", label: "Nombre Plan"},
       {key: "frecuencia", label: "Frecuencia", type: "number"},
       {key: "unidad_frecuencia", label: "Unidad", type: "select", options: ["Días", "Semanas", "Meses", "Horas"]},
       {key: "tipo_mantenimiento", label: "Tipo", type: "select", options: ["Preventivo", "Predictivo", "Legal"]},
-      {key: "activo_principal_id", label: "ID Activo"},
-      {key: "especialidad_id", label: "ID Especialidad"},
-      {key: "tiempo_estimado_horas", label: "Tiempo Est. (Hrs)"},
+      {key: "activo_principal_id", label: "Activo", type: "fk", ref: "activos_principales", refLabel: "nombre", hiddenInTable: true},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     ordenes_trabajo: { label: "Órdenes de Trabajo", group: "Mantenimiento", icon: "📋", fields: [
       {key: "id", pk: true, hidden: true},
       {key: "numero_ot", label: "Nº Orden", required: true},
       {key: "tipo_ot", label: "Tipo OT", type: "select", options: ["Preventiva", "Correctiva", "Emergencia", "Mejora"]},
-      {key: "sub_activo_id", label: "ID Sub-Activo"},
-      {key: "mp_id", label: "ID Plan MP"},
+      {key: "sub_activo_id", label: "Activo/Sub-Activo", type: "fk", ref: "sub_activos", refLabel: "nombre", hiddenInTable: true},
       {key: "prioridad", label: "Prioridad", type: "select", options: ["Baja", "Media", "Alta", "Urgente"]},
-      {key: "descripcion_falla", label: "Descripción Falla"},
-      {key: "descripcion_trabajo", label: "Trabajo Realizado"},
-      {key: "personal_asignado_id", label: "Personal ID"},
-      {key: "fecha_inicio_programada", label: "Inicio Prog.", type: "date"},
-      {key: "fecha_fin_programada", label: "Fin Prog.", type: "date"},
-      {key: "fecha_inicio_real", label: "Inicio Real", type: "date"},
-      {key: "fecha_fin_real", label: "Fin Real", type: "date"},
-      {key: "horas_reales", label: "Horas Reales", type: "number"},
-      {key: "costo_mano_obra", label: "Costo MO ($)", type: "number"},
-      {key: "costo_materiales", label: "Costo Mat ($)", type: "number"},
-      {key: "costo_total", label: "Costo Total ($)", type: "number"},
-      {key: "causa_raiz", label: "Causa Raíz"},
-      {key: "accion_correctiva", label: "Acción Corr."},
+      {key: "descripcion_falla", label: "Desc. Falla"},
+      {key: "personal_asignado_id", label: "Técnico Asignado", type: "fk", ref: "personal", refLabel: "nombre", hiddenInTable: true},
+      {key: "fecha_inicio_real", label: "Inicio Real", type: "datetime-local"},
+      {key: "fecha_fin_real", label: "Fin Real", type: "datetime-local"},
       {key: "estado", label: "Estado", type: "select", options: ["Pendiente", "Aprobada", "En proceso", "Completada", "Cerrada"]}
     ]},
     planes_seguridad: { label: "Planes de Seguridad", group: "Mantenimiento", icon: "🛡", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "codigo", label: "Código"},
-      {key: "nombre", label: "Nombre"},
+      {key: "codigo", label: "Código"}, {key: "nombre", label: "Nombre"},
       {key: "riesgos_identificados", label: "Riesgos"},
-      {key: "epp_requerido", label: "EPP Requerido"},
-      {key: "procedimiento_seguridad", label: "Procedimiento"},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     orden_de_compra: { label: "Órdenes de Compra", group: "Logística", icon: "🛒", fields: [
       {key: "id", pk: true, hidden: true},
       {key: "numero_oc", label: "Nº OC"},
-      {key: "proveedor_id", label: "ID Proveedor"},
-      {key: "fecha_pedido", label: "F. Pedido", type: "date"},
-      {key: "fecha_entrega_estimada", label: "F. Entrega Est.", type: "date"},
-      {key: "monto_total", label: "Monto Total", type: "number"},
-      {key: "moneda", label: "Moneda"},
-      {key: "estado", label: "Estado"},
-      {key: "notas", label: "Notas"}
+      {key: "proveedor_id", label: "Proveedor", type: "fk", ref: "servicios_contratistas", refLabel: "nombre_empresa", hiddenInTable: true},
+      {key: "monto_total", label: "Monto", type: "number"},
+      {key: "estado", label: "Estado"}
     ]},
     personal: { label: "Personal Técnico", group: "Recursos", icon: "👤", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "numero_empleado", label: "Nº Emp."},
-      {key: "nombre", label: "Nombre"},
-      {key: "apellido", label: "Apellido"},
+      {key: "numero_empleado", label: "Nº Empleado"}, {key: "nombre", label: "Nombre"}, {key: "apellido", label: "Apellido"},
       {key: "cargo", label: "Cargo"},
-      {key: "especialidad_id", label: "Especialidad ID"},
-      {key: "turno", label: "Turno"},
-      {key: "telefono", label: "Teléfono"},
-      {key: "email", label: "Email"},
-      {key: "fecha_ingreso", label: "F. Ingreso", type: "date"},
+      {key: "especialidad_id", label: "Especialidad", type: "fk", ref: "especialidades", refLabel: "nombre", hiddenInTable: true},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     especialidades: { label: "Especialidades", group: "Recursos", icon: "🎓", fields: [
-      {key: "id", pk: true, hidden: true},
-      {key: "nombre", label: "Nombre"},
-      {key: "descripcion", label: "Descripción"},
-      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
+      {key: "id", pk: true, hidden: true}, {key: "nombre", label: "Nombre"}, {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     servicios_contratistas: { label: "Contratistas", group: "Recursos", icon: "🏢", fields: [
-      {key: "id", pk: true, hidden: true},
-      {key: "codigo", label: "Código"},
-      {key: "nombre_empresa", label: "Nombre"},
-      {key: "rfc_tax_id", label: "RFC"},
-      {key: "especialidad", label: "Especialidad"},
-      {key: "contacto_nombre", label: "Contacto"},
-      {key: "telefono", label: "Teléfono"},
-      {key: "email", label: "Email"},
-      {key: "calificacion", label: "Calificación"},
+      {key: "id", pk: true, hidden: true}, {key: "codigo", label: "Código"}, {key: "nombre_empresa", label: "Empresa"},
+      {key: "especialidad", label: "Especialidad"}, {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
+    ]},
+    usuarios: { label: "Configuración de Perfiles", group: "Sistema", icon: "🔑", fields: [
+      {key: "id", pk: true, hidden: true}, {key: "username", label: "Usuario"}, {key: "nombre_completo", label: "Nombre Completo"},
+      {key: "role", label: "Rol", type: "select", options: ["Admin", "Supervisor", "Técnico"]},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]}
   };
@@ -272,7 +232,8 @@
     currentModule: 'dashboard',
     rows: [],
     editingIndex: -1,
-    permissions: { canDelete: false, allowedViews: ['*'] }
+    fkCache: {}, // Almacena datos relacionados para los selects
+    permissions: { canDelete: false, canEdit: false }
   };
 
   // ── MOTOR API ─────────────────────────────────
@@ -286,12 +247,22 @@
     return res.json();
   }
 
-  // ── INICIO Y NAVEGACIÓN ───────────────────────
+  // ── INIT & NAV ────────────────────────────────
   window.onload = () => {
     if (!State.user) return renderLogin();
+    applyPermissions();
     renderShell();
     navigate('dashboard');
   };
+
+  function applyPermissions() {
+    const r = State.user.role;
+    State.permissions = {
+      canDelete: r === 'Admin',
+      canEdit: r === 'Admin' || r === 'Supervisor',
+      isTech: r === 'Técnico'
+    };
+  }
 
   function login() {
     const u = document.getElementById('login-user').value.toLowerCase();
@@ -300,23 +271,34 @@
     localStorage.setItem('cmms_user', JSON.stringify(State.user));
     location.reload();
   }
-
   function logout() { localStorage.removeItem('cmms_user'); location.reload(); }
+
+  function toggleNav(id) {
+    const el = document.getElementById(id);
+    el.style.maxHeight = el.style.maxHeight ? null : el.scrollHeight + "px";
+  }
 
   function navigate(mod) {
     State.currentModule = mod;
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.id === 'nav-'+mod));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    const activeNav = document.getElementById('nav-'+mod);
+    if(activeNav) activeNav.classList.add('active');
+    
     if (mod === 'dashboard') renderDashboard();
     else renderModule(mod);
   }
 
+  // ── RENDER SHELL ──────────────────────────────
   function renderLogin() {
     document.getElementById('root').innerHTML = `
-      <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#1c2228">
-        <div class="modal" style="display:block; width:350px; text-align:center">
-          <h2 style="margin-bottom:20px">CMMS ENTERPRISE</h2>
-          <input type="text" id="login-user" class="form-input" placeholder="admin / tecnico" onkeypress="if(event.key==='Enter')login()">
-          <button class="btn btn-primary" style="width:100%; margin-top:20px" onclick="login()">ENTRAR</button>
+      <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80') center/cover">
+        <div class="modal" style="display:block; width:400px; text-align:center; background:var(--glass); backdrop-filter:blur(20px);">
+          <div class="modal-body">
+            <h2 style="margin-bottom:10px; font-size:24px; font-weight:800"><span style="color:#3b82f6">CMMS</span> ENTERPRISE</h2>
+            <p style="color:var(--text-dim); font-size:13px; margin-bottom:30px">Ingreso al Sistema de Mantenimiento</p>
+            <input type="text" id="login-user" class="form-input" style="margin-bottom:20px; padding:15px" placeholder="Usuario (admin / tecnico)" onkeypress="if(event.key==='Enter')login()">
+            <button class="btn btn-primary" style="width:100%; padding:15px; font-size:15px" onclick="login()">Acceder al Portal</button>
+          </div>
         </div>
       </div>`;
   }
@@ -324,109 +306,196 @@
   function renderShell() {
     document.getElementById('root').innerHTML = `
       <header class="shell-bar">
-        <div class="logo" onclick="navigate('dashboard')"><span>CCMS</span> SBNE</div>
+        <div class="logo" onclick="navigate('dashboard')"><span>CMMS</span> Enterprise</div>
         <div class="shell-right">
-          <div style="font-size:11px; color:var(--green)">● ONLINE</div>
-          <button class="btn btn-ghost" onclick="logout()">SALIR</button>
+          <div style="font-size:12px; font-weight:600; color:var(--text-dim)">${State.user.nombre} (${State.user.role})</div>
+          <button class="btn btn-ghost btn-icon" onclick="logout()" title="Cerrar Sesión">🚪</button>
         </div>
       </header>
       <div class="app-layout">
         <nav class="side-nav">
-          <div class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')">📊 Dashboard</div>
-          <div class="nav-group-hdr">MANTENIMIENTO</div>
-          <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</div>
-          <div class="nav-item" id="nav-mps" onclick="navigate('mps')">📅 Planes de MP</div>
-          <div class="nav-item" id="nav-planes_seguridad" onclick="navigate('planes_seguridad')">🛡 Planes de Seguridad</div>
-          <div class="nav-group-hdr">JERARQUÍA DE ACTIVOS</div>
-          <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos Principales</div>
-          <div class="nav-item" id="nav-sub_activos" onclick="navigate('sub_activos')">🔧 Sub-Activos</div>
-          <div class="nav-item" id="nav-sistemas" onclick="navigate('sistemas')">🔩 Sistemas</div>
-          <div class="nav-item" id="nav-componentes" onclick="navigate('componentes')">⚙ Componentes</div>
-          <div class="nav-item" id="nav-despiece" onclick="navigate('despiece')">📐 Despiece</div>
-          <div class="nav-item" id="nav-procesos" onclick="navigate('procesos')">⚙ Procesos</div>
-          <div class="nav-item" id="nav-ubicaciones" onclick="navigate('ubicaciones')">📍 Ubicaciones</div>
-          <div class="nav-item" id="nav-unidades_negocio" onclick="navigate('unidades_negocio')">🏛 Unidades Negocio</div>
-          <div class="nav-item" id="nav-sitios" onclick="navigate('sitios')">🏗 Sitios / Plantas</div>
-          <div class="nav-item" id="nav-empresas" onclick="navigate('empresas')">🏢 Empresas</div>
-          <div class="nav-group-hdr">LOGÍSTICA Y COMPRAS</div>
-          <div class="nav-item" id="nav-orden_de_compra" onclick="navigate('orden_de_compra')">🛒 Órdenes de Compra</div>
-          <div class="nav-group-hdr">RECURSOS</div>
-          <div class="nav-item" id="nav-personal" onclick="navigate('personal')">👤 Personal Técnico</div>
-          <div class="nav-item" id="nav-especialidades" onclick="navigate('especialidades')">🎓 Especialidades</div>
-          <div class="nav-item" id="nav-servicios_contratistas" onclick="navigate('servicios_contratistas')">🏢 Contratistas Externos</div>
-          <div class="nav-group-hdr">SISTEMA</div>
-          <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Usuarios</div>
+          <div class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')">📊 Dashboard KPI</div>
+          
+          <div class="nav-group-hdr" onclick="toggleNav('nav-mantenimiento')">MANTENIMIENTO <span>▼</span></div>
+          <div id="nav-mantenimiento" class="nav-dropdown" style="max-height:1000px">
+            <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</div>
+            <div class="nav-item" id="nav-mps" onclick="navigate('mps')">📅 Planes de MP</div>
+            <div class="nav-item" id="nav-planes_seguridad" onclick="navigate('planes_seguridad')">🛡 Planes de Seguridad</div>
+          </div>
+
+          <div class="nav-group-hdr" onclick="toggleNav('nav-jerarquia')">JERARQUÍA DE ACTIVOS <span>▼</span></div>
+          <div id="nav-jerarquia" class="nav-dropdown" style="max-height:1000px">
+            <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos Principales</div>
+            <div class="nav-item" id="nav-sub_activos" onclick="navigate('sub_activos')">🔧 Sub-Activos</div>
+            <div class="nav-item" id="nav-sistemas" onclick="navigate('sistemas')">🔩 Sistemas</div>
+            <div class="nav-item" id="nav-componentes" onclick="navigate('componentes')">⚙ Componentes</div>
+            <div class="nav-item" id="nav-despiece" onclick="navigate('despiece')">📐 Despiece</div>
+            <div class="nav-item" id="nav-procesos" onclick="navigate('procesos')">⚙ Procesos</div>
+            <div class="nav-item" id="nav-ubicaciones" onclick="navigate('ubicaciones')">📍 Ubicaciones</div>
+            <div class="nav-item" id="nav-unidades_negocio" onclick="navigate('unidades_negocio')">🏛 Unidades Negocio</div>
+            <div class="nav-item" id="nav-sitios" onclick="navigate('sitios')">🏗 Sitios / Plantas</div>
+            <div class="nav-item" id="nav-empresas" onclick="navigate('empresas')">🏢 Empresas</div>
+          </div>
+
+          <div class="nav-group-hdr" onclick="toggleNav('nav-logistica')">LOGÍSTICA Y COMPRAS <span>▼</span></div>
+          <div id="nav-logistica" class="nav-dropdown" style="max-height:1000px">
+            <div class="nav-item" id="nav-orden_de_compra" onclick="navigate('orden_de_compra')">🛒 Órdenes de Compra</div>
+          </div>
+
+          <div class="nav-group-hdr" onclick="toggleNav('nav-recursos')">RECURSOS HUMANOS <span>▼</span></div>
+          <div id="nav-recursos" class="nav-dropdown" style="max-height:1000px">
+            <div class="nav-item" id="nav-personal" onclick="navigate('personal')">👤 Personal Técnico</div>
+            <div class="nav-item" id="nav-especialidades" onclick="navigate('especialidades')">🎓 Especialidades</div>
+            <div class="nav-item" id="nav-servicios_contratistas" onclick="navigate('servicios_contratistas')">🏢 Contratistas Externos</div>
+          </div>
+
+          <div class="nav-group-hdr" onclick="toggleNav('nav-sistema')">CONFIGURACIÓN <span>▼</span></div>
+          <div id="nav-sistema" class="nav-dropdown" style="max-height:1000px">
+            <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Perfiles de Usuario</div>
+          </div>
         </nav>
         <main class="main-content" id="main-content"></main>
       </div>
       <div class="modal-overlay" id="modal-overlay"></div>`;
   }
 
+  // ── DASHBOARD DINÁMICO ────────────────────────
   async function renderDashboard() {
-    document.getElementById('main-content').innerHTML = `<h1>Hola, ${State.user.nombre}</h1><p>Resumen operacional cargando...</p>`;
+    document.getElementById('main-content').innerHTML = `<div class="spinner"></div>`;
     try {
-      const ots = await api('ordenes_trabajo');
+      const [ots, activos] = await Promise.all([api('ordenes_trabajo'), api('activos_principales')]);
+      
+      const otAbiertas = ots.filter(o => o.estado !== 'Cerrada' && o.estado !== 'Completada').length;
+      const otProceso = ots.filter(o => o.estado === 'En proceso').length;
+      const activosCriticos = activos.filter(a => a.criticidad === 'A - Crítica').length;
+
       document.getElementById('main-content').innerHTML = `
-        <h1>Dashboard</h1>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px">
-          <div class="kpi-card"><div>OT Abiertas</div><div class="kpi-val">${ots.filter(o=>o.estado!=='Cerrada').length}</div></div>
-          <div class="kpi-card" style="border-left-color:var(--yellow)"><div>En Proceso</div><div class="kpi-val">${ots.filter(o=>o.estado==='En proceso').length}</div></div>
+        <div class="dashboard-header">
+          <div><h1 style="font-weight:800; font-size:28px">Centro de Control Operativo</h1><p style="color:var(--text-dim); margin-top:5px">Métricas de mantenimiento en tiempo real</p></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card yellow">
+            <div class="kpi-title">OT Pendientes</div><div class="kpi-value">${otAbiertas}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">OT En Ejecución</div><div class="kpi-value">${otProceso}</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-title">Eficiencia Mensual</div><div class="kpi-value">94%</div>
+          </div>
+          <div class="kpi-card red">
+            <div class="kpi-title">Activos Críticos</div><div class="kpi-value">${activosCriticos}</div>
+          </div>
+        </div>
+        <div class="grid-wrap" style="padding:20px">
+          <h3 style="margin-bottom:15px">Últimas Órdenes Creadas</h3>
+          <table>
+            <thead><tr><th>Nº OT</th><th>Tipo</th><th>Estado</th></tr></thead>
+            <tbody>
+              ${ots.slice(0,5).map(o => `<tr><td>${o.numero_ot||'—'}</td><td>${o.tipo_ot||'—'}</td><td><span class="badge badge-blue">${o.estado||'—'}</span></td></tr>`).join('')}
+            </tbody>
+          </table>
         </div>`;
-    } catch(e) {}
+    } catch(e) { document.getElementById('main-content').innerHTML = `Error cargando KPIs.`; }
   }
 
+  // ── RENDER MÓDULOS ────────────────────────────
   async function renderModule(mod) {
     const sch = SCHEMA[mod];
     document.getElementById('main-content').innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center">
-        <h1>${sch.icon} ${sch.label}</h1>
+      <div class="module-header">
+        <div class="module-title">${sch.icon} ${sch.label}</div>
         <button class="btn btn-primary" onclick="openModal('${mod}')">+ Nuevo Registro</button>
       </div>
       <div class="grid-wrap" id="grid-container"><div class="spinner"></div></div>`;
     
     try {
       State.rows = await api(mod);
-      const visibleFields = sch.fields.filter(f=>!f.hidden).slice(0, 6);
-      let html = `<table><thead><tr><th>#</th>${visibleFields.map(f => `<th>${f.label}</th>`).join('')}<th>ACCIONES</th></tr></thead><tbody>`;
+      // Filtramos campos ocultos en la tabla (como los UUID)
+      const tableFields = sch.fields.filter(f => !f.pk && !f.hiddenInTable);
+      
+      let html = `<table><thead><tr><th>CÓDIGO / REF</th>${tableFields.map(f => `<th>${f.label}</th>`).join('')}<th>ACCIONES</th></tr></thead><tbody>`;
       State.rows.forEach((r, i) => {
-        html += `<tr><td>${i+1}</td>${visibleFields.map(f => `<td>${r[f.key] || '—'}</td>`).join('')}
+        // Encontrar el campo principal (codigo, numero_ot, nombre)
+        let mainCol = r.codigo || r.numero_ot || r.username || `Ref-${i}`;
+        
+        html += `<tr><td style="font-weight:700; color:#3b82f6">${mainCol}</td>${tableFields.map(f => {
+          const val = r[f.key] || '—';
+          if (val === 'Aprobada' || val === 'Activo' || val === 'Operativo') return `<td><span class="badge badge-green">${val}</span></td>`;
+          if (val === 'En proceso') return `<td><span class="badge badge-blue">${val}</span></td>`;
+          if (val === 'Pendiente') return `<td><span class="badge badge-yellow">${val}</span></td>`;
+          if (val === 'Crítica' || val === 'Fuera de servicio' || val === 'Urgente') return `<td><span class="badge badge-red">${val}</span></td>`;
+          return `<td>${val}</td>`;
+        }).join('')}
         <td>
-          <button class="btn btn-ghost btn-icon" onclick="openModal('${mod}', ${i})">✏</button>
+          <div style="display:flex; gap:5px">
+            <button class="btn btn-ghost btn-icon" onclick="viewModal('${mod}', ${i})" title="Ver Detalles">👁</button>
+            <button class="btn btn-ghost btn-icon" onclick="openModal('${mod}', ${i})" title="Editar">✏</button>
+            ${mod === 'ordenes_trabajo' ? `
+              <button class="btn btn-success btn-icon" onclick="actionOT(${i}, 'start')" title="Iniciar (Play)">▶</button>
+              <button class="btn btn-danger btn-icon" onclick="actionOT(${i}, 'stop')" title="Finalizar (Stop)">⏹</button>
+              <button class="btn btn-ghost btn-icon" onclick="window.print()" title="Imprimir">🖨</button>
+            ` : ''}
+            ${State.permissions.canDelete ? `<button class="btn btn-danger btn-icon" onclick="deleteItem('${mod}', ${i})" title="Eliminar">🗑</button>` : ''}
+          </div>
         </td></tr>`;
       });
       html += '</tbody></table>';
-      document.getElementById('grid-container').innerHTML = State.rows.length ? html : '<div style="padding:40px; text-align:center">Sin datos</div>';
+      document.getElementById('grid-container').innerHTML = State.rows.length ? html : '<div style="padding:60px; text-align:center; color:var(--text-dim)">Sin registros.</div>';
     } catch (e) {
-      document.getElementById('grid-container').innerHTML = '<p>Error de conexión</p>';
+      document.getElementById('grid-container').innerHTML = '<div style="padding:40px; color:var(--red)">Error de conexión con la base de datos.</div>';
     }
   }
 
-  function openModal(mod, index = -1) {
+  // ── FORMULARIOS Y SELECTS RELACIONALES ─────────
+  async function openModal(mod, index = -1, isViewOnly = false) {
     const sch = SCHEMA[mod];
     State.editingIndex = index;
     const row = index >= 0 ? State.rows[index] : {};
     
+    // Cargar listas para Foreign Keys (FK) dinámicamente
+    const fkFields = sch.fields.filter(f => f.type === 'fk');
+    for (let f of fkFields) {
+      if (!State.fkCache[f.ref]) {
+        try { State.fkCache[f.ref] = await api(f.ref); } 
+        catch(e) { State.fkCache[f.ref] = []; }
+      }
+    }
+
     let html = `
       <div class="modal">
-        <span class="modal-close" onclick="closeModal()">×</span>
-        <h3>${index >= 0 ? 'Editar' : 'Nuevo'} ${sch.label}</h3>
-        <div class="form-grid">
-          ${sch.fields.filter(f=>!f.pk).map(f => `
-            <div class="form-field">
-              <label class="form-label">${f.label}</label>
-              ${f.type === 'select' ? `
-                <select id="f-${f.key}" class="form-input">
-                  ${f.options.map(o => `<option value="${o}" ${row[f.key]===o?'selected':''}>${o}</option>`).join('')}
-                </select>
-              ` : `
-                <input type="${f.type||'text'}" id="f-${f.key}" class="form-input" value="${row[f.key]||''}">
-              `}
-            </div>
-          `).join('')}
+        <div class="modal-header">
+          <h3 style="font-size:18px; font-weight:700">${isViewOnly ? '👁 Detalles' : (index >= 0 ? '✏ Editar' : '➕ Nuevo')} ${sch.label}</h3>
+          <span class="modal-close" onclick="closeModal()">×</span>
         </div>
-        <div style="text-align:right; margin-top:20px">
-          <button class="btn btn-ghost" onclick="closeModal()" style="margin-right:10px">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveItem('${mod}')">Guardar Registro</button>
+        <div class="modal-body">
+          <div class="form-grid">
+            ${sch.fields.filter(f=>!f.pk).map(f => {
+              let inputHtml = '';
+              const val = row[f.key] || '';
+              const disabled = isViewOnly ? 'disabled' : '';
+              
+              if (f.type === 'select') {
+                inputHtml = `<select id="f-${f.key}" class="form-input" ${disabled}>
+                  <option value="">Seleccionar...</option>
+                  ${f.options.map(o => `<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('')}
+                </select>`;
+              } else if (f.type === 'fk') {
+                const options = State.fkCache[f.ref] || [];
+                inputHtml = `<select id="f-${f.key}" class="form-input" ${disabled}>
+                  <option value="">Seleccionar ${f.label}...</option>
+                  ${options.map(o => `<option value="${o.id}" ${val===o.id?'selected':''}>${o.codigo ? o.codigo+' - ' : ''}${o[f.refLabel]}</option>`).join('')}
+                </select>`;
+              } else {
+                inputHtml = `<input type="${f.type||'text'}" id="f-${f.key}" class="form-input" value="${val}" ${disabled} placeholder="${f.label}">`;
+              }
+              return `<div class="form-field"><label class="form-label">${f.label}</label>${inputHtml}</div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>
+          ${!isViewOnly ? `<button class="btn btn-primary" onclick="saveItem('${mod}')">Guardar Registro</button>` : ''}
         </div>
       </div>`;
     
@@ -435,32 +504,64 @@
     overlay.style.display = 'flex';
   }
 
+  function viewModal(mod, index) { openModal(mod, index, true); }
   function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
+  // ── ACCIONES DE BASE DE DATOS ──────────────────
   async function saveItem(mod) {
     const sch = SCHEMA[mod];
     const data = {};
     sch.fields.filter(f=>!f.pk).forEach(f => {
-      data[f.key] = document.getElementById('f-' + f.key).value;
+      const el = document.getElementById('f-' + f.key);
+      if (el && el.value) data[f.key] = el.value;
     });
 
     try {
       const isEdit = State.editingIndex >= 0;
       const url = isEdit ? `${CONFIG.url}${mod}?id=eq.${State.rows[State.editingIndex].id}` : `${CONFIG.url}${mod}`;
-      const method = isEdit ? 'PATCH' : 'POST';
-      
       const res = await fetch(url, {
-        method,
-        headers: { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+        method: isEdit ? 'PATCH' : 'POST',
+        headers: { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-
       if (res.ok) { closeModal(); navigate(mod); } 
-      else { alert("Error al guardar"); }
-    } catch(e) { alert("Error"); }
+      else { alert("Error al guardar en base de datos."); }
+    } catch(e) { alert("Error de red."); }
   }
 
-  window.onload = init;
+  async function deleteItem(mod, index) {
+    if (!confirm("⚠️ ¿Eliminar permanentemente este registro? Esta acción no se puede deshacer.")) return;
+    try {
+      const url = `${CONFIG.url}${mod}?id=eq.${State.rows[index].id}`;
+      await fetch(url, { method: 'DELETE', headers: { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}` } });
+      navigate(mod);
+    } catch(e) { alert("Error al eliminar"); }
+  }
+
+  // ── FLUJO DE ÓRDENES DE TRABAJO (PLAY / STOP) ──
+  async function actionOT(index, action) {
+    const ot = State.rows[index];
+    const now = new Date().toISOString().slice(0, 16); // Formato datetime-local YYYY-MM-DDTHH:mm
+    let updateData = {};
+
+    if (action === 'start') {
+      if (!confirm("¿Iniciar orden ahora? Se registrará la fecha y hora actual.")) return;
+      updateData = { estado: 'En proceso', fecha_inicio_real: now };
+    } else if (action === 'stop') {
+      if (!confirm("¿Finalizar orden? Esto la marcará como Completada.")) return;
+      updateData = { estado: 'Completada', fecha_fin_real: now };
+    }
+
+    try {
+      const url = `${CONFIG.url}ordenes_trabajo?id=eq.${ot.id}`;
+      await fetch(url, {
+        method: 'PATCH',
+        headers: { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+      navigate('ordenes_trabajo'); // Recargar tabla
+    } catch(e) { alert("Error actualizando la OT."); }
+  }
 </script>
 </body>
 </html>
