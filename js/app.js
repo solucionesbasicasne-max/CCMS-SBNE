@@ -14,23 +14,105 @@ const State = {
   sortDir: 1,
   editingRow: null,
   editingIndex: null,
-  useMock: !API.getUrl()
+  useMock: !API.getUrl(),
+  user: null, // Usuario autenticado
+  permissions: {
+    canDelete: false,
+    allowedViews: []
+  }
 };
 
 // ═══════════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  navigate('dashboard');
-  if (State.useMock) {
-    toast('Modo demo activo — configura tu URL en ⚙ Configuración', 'warning', 5000);
+document.addEventListener('DOMContentLoaded', async () => {
+  const savedUser = localStorage.getItem('cmms_user');
+  if (savedUser) {
+    State.user = JSON.parse(savedUser);
+    applyPermissions();
+    renderShell();
+    navigate('dashboard');
+  } else {
+    renderLogin();
   }
 });
+
+function renderLogin() {
+  document.body.innerHTML = `
+    <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#1c2228">
+      <div class="modal" style="display:block; opacity:1; pointer-events:all; width:350px; position:static; transform:none">
+        <div class="modal-header" style="justify-content:center; border:none; padding-top:40px">
+          <div style="text-align:center">
+            <div style="font-size:24px; font-weight:700; color:#fff; letter-spacing:1px">CMMS ENTERPRISE</div>
+            <div style="font-size:10px; color:var(--text-sub); text-transform:uppercase; margin-top:5px">Portal de Acceso Seguro</div>
+          </div>
+        </div>
+        <div class="modal-body" style="padding:30px">
+          <div class="form-field">
+            <label class="form-label">Usuario</label>
+            <input type="text" id="login-user" class="form-input" placeholder="admin / supervisor / tecnico">
+          </div>
+          <div class="form-field" style="margin-top:20px">
+            <label class="form-label">Contraseña</label>
+            <input type="password" id="login-pass" class="form-input" placeholder="••••••">
+          </div>
+          <button class="btn btn-primary" style="width:100%; margin-top:30px; padding:12px" onclick="handleLogin()">INICIAR SESIÓN</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function handleLogin() {
+  const u = document.getElementById('login-user').value.toLowerCase();
+  
+  // DEMO DE ROLES (En producción consultar tabla 'usuarios' + 'roles')
+  if (u === 'admin') {
+    State.user = { id: '1', nombre: 'Super Admin', role: 'Super Admin' };
+  } else if (u === 'supervisor') {
+    State.user = { id: '2', nombre: 'Supervisor Planta', role: 'Supervisor' };
+  } else if (u === 'tecnico') {
+    State.user = { id: '3', nombre: 'Técnico Campo', role: 'Técnico' };
+  } else {
+    return alert('Usuario no reconocido. Use: admin, supervisor o tecnico');
+  }
+
+  localStorage.setItem('cmms_user', JSON.stringify(State.user));
+  location.reload();
+}
+
+function applyPermissions() {
+  if (!State.user) return;
+  const r = State.user.role;
+  
+  if (r === 'Super Admin') {
+    State.permissions = { canDelete: true, allowedViews: ['*'] };
+  } else if (r === 'Supervisor') {
+    State.permissions = { canDelete: false, allowedViews: ['dashboard','activos','manto','planeacion','inventarios','personal'] };
+  } else {
+    State.permissions = { canDelete: false, allowedViews: ['dashboard','manto','planeacion','calendario','gantt'] };
+  }
+}
+
+function renderShell() {
+  // Solo restaurar el shell original que está en el HTML si estamos logueados
+  location.reload; // El HTML base ya tiene el shell, pero el login lo sobreescribió
+}
+
+function logout() {
+  localStorage.removeItem('cmms_user');
+  location.reload();
+}
 
 // ═══════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════
-function navigate(module) {
+  if (State.permissions.allowedViews[0] !== '*' && !State.permissions.allowedViews.includes(module)) {
+    if (module !== 'dashboard') {
+      toast('No tienes permiso para acceder a esta vista', 'error');
+      return;
+    }
+  }
+
   State.currentModule = module;
   // Update nav items
   document.querySelectorAll('.nav-item, .nav-sub').forEach(el => {
@@ -42,6 +124,9 @@ function navigate(module) {
     module === 'calendario' ? 'Calendario de Trabajo' :
     module === 'gantt' ? 'Diagrama de Gantt' :
     module === 'ordenes_en_proceso' ? 'Órdenes en Ejecución' :
+    module === 'usuarios' ? 'Gestión de Usuarios' :
+    module === 'roles' ? 'Roles y Seguridad' :
+    module === 'configuracion_negocio' ? 'Datos del Negocio' :
     (SCHEMA[module]?.label || module);
 
   if (module === 'dashboard')     renderDashboard();
@@ -452,7 +537,7 @@ function renderGrid(module) {
               <button class="btn btn-ghost btn-sm btn-icon" title="Imprimir PDF" onclick="event.stopPropagation();printOrderPDF(${i})">🖨</button>
             ` : ''}
             <button class="btn btn-ghost btn-sm btn-icon" title="Editar" onclick="event.stopPropagation();openEditModal('${module}',${i})">✏</button>
-            <button class="btn btn-danger btn-sm btn-icon" title="Eliminar" onclick="event.stopPropagation();confirmDelete('${module}',${i})">🗑</button>
+            ${State.permissions.canDelete ? `<button class="btn btn-danger btn-sm btn-icon" title="Eliminar" onclick="event.stopPropagation();confirmDelete('${module}',${i})">🗑</button>` : ''}
           </div>
         </td>
       </tr>`;

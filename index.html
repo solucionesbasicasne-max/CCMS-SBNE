@@ -37,7 +37,7 @@
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16c1.1 0 2-.9 2-2H6c0 1.1.9 2 2 2zm6-3H2v-1l2-2V6c0-2.8 1.7-5.1 4-5.8V0h0C8 0 8 0 8 0s0 0 0 0h0v.2C10.3.9 12 3.2 12 6v4l2 2v1z"/></svg>
       <span class="notif-badge" id="notifBadge" style="display:none">0</span>
     </button>
-    <div class="shell-avatar" title="Usuario">U</div>
+    <div class="shell-avatar" title="Cerrar Sesión" onclick="logout()" style="font-size:10px; cursor:pointer">SALIR</div>
   </div>
 </header>
 
@@ -60,10 +60,9 @@
         <span class="nav-arrow" id="arr-admin">›</span>
       </div>
       <div class="nav-group-body" id="grp-admin">
-        <a class="nav-item nav-sub" onclick="navigate('Ubicaciones')">Ubicaciones</a>
-        <a class="nav-item nav-sub" onclick="navigate('Especialidades')">Especialidades</a>
-        <a class="nav-item nav-sub" onclick="navigate('Personal')">Personal</a>
-        <a class="nav-item nav-sub" onclick="navigate('Catalogo')">Catálogo</a>
+        <a class="nav-item nav-sub" data-module="usuarios" onclick="navigate('usuarios')">👤 Usuarios</a>
+        <a class="nav-item nav-sub" data-module="roles" onclick="navigate('roles')">🔐 Roles y Seguridad</a>
+        <a class="nav-item nav-sub" data-module="configuracion_negocio" onclick="navigate('configuracion_negocio')">🏢 Datos del Negocio</a>
       </div>
     </div>
 

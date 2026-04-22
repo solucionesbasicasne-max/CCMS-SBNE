@@ -198,7 +198,7 @@ const SCHEMA = {
   },
 
   catalogo: {
-    label: "Catálogo", group: "Administración", icon: "📚",
+    label: "Catálogo", group: "Almacén e Inventarios", icon: "📚",
     fields: [
       { key: "id",               label: "ID",          type: "text", pk: true, readonly: true },
       { key: "codigo_articulo",  label: "Código",      type: "text", required: true },
@@ -319,6 +319,41 @@ const SCHEMA = {
       { key: "fecha_recepcion",  label: "F. Recepción", type: "date" },
       { key: "recibido_por_id",  label: "Recibido por", type: "text", fk: "personal" },
       { key: "almacen",          label: "Almacén",      type: "text" }
+    ]
+  },
+
+  // ── ADMINISTRACIÓN Y SEGURIDAD ────────────────
+  usuarios: {
+    label: "Usuarios del Sistema", group: "Administración", icon: "👤",
+    fields: [
+      { key: "id",              label: "ID",           type: "text", pk: true, readonly: true },
+      { key: "username",        label: "Usuario",      type: "text", required: true },
+      { key: "nombre_completo", label: "Nombre",       type: "text" },
+      { key: "rol_id",          label: "Rol",          type: "text", fk: "roles", required: true },
+      { key: "estado",          label: "Estado",       type: "select", options: ["Activo","Inactivo"], badge: true }
+    ]
+  },
+
+  roles: {
+    label: "Roles y Permisos", group: "Administración", icon: "🔐",
+    fields: [
+      { key: "id",               label: "ID",           type: "text", pk: true, readonly: true },
+      { key: "nombre",           label: "Nombre Rol",   type: "text", required: true },
+      { key: "permiso_eliminar", label: "Puede Eliminar", type: "select", options: ["Sí","No"] },
+      { key: "vistas_permitidas",label: "Vistas (Lista)", type: "textarea", placeholder: "manto,planeacion,activos..." }
+    ]
+  },
+
+  configuracion_negocio: {
+    label: "Datos del Negocio", group: "Administración", icon: "🏢",
+    fields: [
+      { key: "id",             label: "ID",           type: "text", pk: true, readonly: true },
+      { key: "nombre_empresa", label: "Nombre Empresa", type: "text", required: true },
+      { key: "rfc_nit",        label: "RFC / NIT",    type: "text" },
+      { key: "direccion",      label: "Dirección",    type: "textarea" },
+      { key: "telefono",       label: "Teléfono",     type: "text" },
+      { key: "logo_url",       label: "Logo URL",     type: "text" },
+      { key: "moneda",         label: "Moneda",       type: "text" }
     ]
   }
 };
