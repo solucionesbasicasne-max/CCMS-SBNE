@@ -4,56 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CMMS Enterprise — CCMS SBNE</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+  /* ── CSS FULL SYSTEM ────────────────────────────────── */
   :root {
     --bg: #1c2228; --surface: #262c33; --surface2: #343d46;
     --primary: #0070f2; --text: #f0f2f5; --text-dim: #a0aab4;
     --border: #3d444b; --red: #ff4d4d; --green: #107e3e; --yellow: #e9730c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
   
-  /* SHELL */
   .shell-bar { height: 48px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 1000; }
-  .logo { font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .logo { font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 18px; }
   .logo span { color: var(--primary); }
   .shell-right { display: flex; align-items: center; gap: 15px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-  /* LAYOUT */
+  
   .app-layout { display: flex; padding-top: 48px; height: 100vh; }
-  .side-nav { width: 240px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px 10px; flex-shrink: 0; }
-  .main-content { flex-grow: 1; overflow-y: auto; padding: 20px; position: relative; }
+  .side-nav { width: 250px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px 10px; flex-shrink: 0; }
+  .main-content { flex-grow: 1; overflow-y: auto; padding: 25px; position: relative; background: var(--bg); }
 
-  /* NAV */
-  .nav-group-hdr { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin: 20px 0 8px 12px; letter-spacing: 1px; }
-  .nav-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; color: var(--text-dim); text-decoration: none; border-radius: 4px; font-size: 13px; cursor: pointer; margin-bottom: 2px; }
+  .nav-group-hdr { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin: 22px 0 8px 12px; letter-spacing: 1px; font-weight: 600; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--text-dim); text-decoration: none; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 2px; transition: .2s; }
   .nav-item:hover { background: var(--surface2); color: #fff; }
-  .nav-item.active { background: var(--primary); color: #fff; font-weight: 600; }
+  .nav-item.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 4px 10px rgba(0,112,242,0.3); }
 
-  /* GRID */
-  .grid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 15px; }
+  .grid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: var(--surface2); padding: 12px; text-align: left; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 600; }
+  th { background: var(--surface2); padding: 14px 12px; text-align: left; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 600; }
   td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text); }
   tr:hover { background: rgba(255,255,255,0.03); }
 
-  /* UI */
-  .btn { padding: 8px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: .2s; }
+  .btn { padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; gap: 6px; }
   .btn-primary { background: var(--primary); color: #fff; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
   .btn-danger { background: var(--red); color: #fff; }
-  .badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-  .badge-green { background: rgba(16,126,62,0.2); color: #48bb78; }
-  .badge-blue { background: rgba(0,112,242,0.2); color: #4dabff; }
-  .badge-yellow { background: rgba(233,115,12,0.2); color: #f6ad55; }
-  .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
+  .btn-icon { padding: 6px; border-radius: 4px; }
+  
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-green { background: rgba(16,126,62,0.15); color: #48bb78; border: 1px solid rgba(16,126,62,0.3); }
+  .badge-blue { background: rgba(0,112,242,0.15); color: #4dabff; border: 1px solid rgba(0,112,242,0.3); }
+  .badge-yellow { background: rgba(233,115,12,0.15); color: #f6ad55; border: 1px solid rgba(233,115,12,0.3); }
+  .badge-red { background: rgba(255,77,77,0.15); color: #ff6b6b; border: 1px solid rgba(255,77,77,0.3); }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 25px 0; }
+  .kpi-card { background: var(--surface); padding: 25px; border-radius: 10px; border: 1px solid var(--border); border-left: 5px solid var(--primary); transition: .3s; }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+  .kpi-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .kpi-val { font-size: 32px; font-weight: 700; margin-top: 10px; color: #fff; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+  .modal { background: var(--surface); width: 100%; max-width: 600px; border-radius: 10px; border: 1px solid var(--border); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+  .form-field { margin-bottom: 20px; }
+  .form-label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; }
+  .form-input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 14px; }
+  .form-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0,112,242,0.2); }
+
+  .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.05); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 60px auto; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* DASHBOARD */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
-  .kpi-card { background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border); border-left: 4px solid var(--primary); }
-  .kpi-val { font-size: 28px; font-weight: 700; margin: 5px 0; }
+  /* GANTT */
+  .gantt-chart { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; height: 500px; margin-top: 20px; }
+  .gantt-sidebar { width: 200px; border-right: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
+  .gantt-body { flex-grow: 1; overflow-x: auto; position: relative; }
+  .gantt-timeline { display: flex; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .gantt-day { min-width: 60px; padding: 10px; text-align: center; border-right: 1px solid var(--border); font-size: 11px; color: var(--text-dim); }
+  .gantt-row { height: 45px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
+  .gantt-bar { position: absolute; height: 28px; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 10px; font-weight: 700; color: #fff; cursor: pointer; transition: .2s; white-space: nowrap; overflow: hidden; }
 </style>
 </head>
 <body>
@@ -61,7 +78,7 @@
 <div id="root"></div>
 
 <script>
-  // ── CONFIGURACIÓN SUPABASE ─────────────────────
+  // ── CONFIGURACIÓN & ESTADO ──────────────────────
   const CONFIG = {
     url: 'https://xwciwrtenrdvhwvvjkzt.supabase.co/rest/v1/',
     key: 'sb_publishable_RIfaIPuzvQ27Drwp-vx-MQ_o6_xgoGt'
@@ -75,54 +92,73 @@
   };
 
   const SCHEMA = {
+    empresas: { label: "Empresas", group: "Jerarquía", icon: "🏢", fields: ["codigo", "nombre", "pais", "estado"] },
+    sitios: { label: "Plantas / Sitios", group: "Jerarquía", icon: "🏗", fields: ["codigo", "nombre", "ciudad", "estado"] },
+    procesos: { label: "Procesos", group: "Jerarquía", icon: "⚙", fields: ["codigo", "nombre", "tipo_proceso", "estado"] },
+    activos_principales: { label: "Activos", group: "Jerarquía", icon: "🏭", fields: ["codigo", "nombre", "marca", "modelo", "estado"] },
+    mps: { label: "Planes MP", group: "Mantenimiento", icon: "📅", fields: ["codigo_mp", "nombre_mp", "frecuencia", "estado"] },
     ordenes_trabajo: { label: "Órdenes de Trabajo", group: "Mantenimiento", icon: "📋", fields: ["numero_ot", "tipo_ot", "prioridad", "estado", "fecha_inicio_programada"] },
-    activos_principales: { label: "Activos Principales", group: "Activos", icon: "🏭", fields: ["codigo", "nombre", "marca", "modelo", "estado"] },
-    inventarios: { label: "Inventarios", group: "Inventarios", icon: "📦", fields: ["stock_actual", "costo_unitario", "almacen"] },
-    personal: { label: "Personal", group: "Recursos", icon: "👤", fields: ["nombre", "apellido", "especialidad", "estado"] },
-    usuarios: { label: "Usuarios", group: "Sistema", icon: "🔑", fields: ["username", "nombre_completo", "rol_id", "estado"] }
+    inventarios: { label: "Stock / Almacén", group: "Logística", icon: "📦", fields: ["stock_actual", "costo_unitario", "almacen"] },
+    personal: { label: "Personal Técnico", group: "Recursos", icon: "👤", fields: ["nombre", "apellido", "especialidad", "estado"] },
+    usuarios: { label: "Seguridad / Usuarios", group: "Sistema", icon: "🔑", fields: ["username", "nombre_completo", "rol_id", "estado"] }
   };
 
-  // ── API ENGINE ────────────────────────────────
-  async function apiRequest(table, method = 'GET', body = null) {
-    const url = `${CONFIG.url}${table.toLowerCase()}?select=*`;
-    const headers = { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json' };
-    const res = await fetch(url, { method, headers });
+  // ── MOTOR API ─────────────────────────────────
+  async function api(path, method = 'GET', body = null) {
+    const url = path.startsWith('http') ? path : `${CONFIG.url}${path.toLowerCase()}${method==='GET'?'?select=*':''}`;
+    const headers = { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+    const opts = { method, headers };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(url, opts);
+    if (!res.ok) throw new Error("Error en DB");
     return res.json();
   }
 
-  // ── NAVEGACIÓN ────────────────────────────────
-  function init() {
+  // ── INICIO ───────────────────────────────────
+  window.onload = () => {
     if (!State.user) return renderLogin();
+    applyPermissions();
     renderShell();
     navigate('dashboard');
-  }
+  };
 
   function login() {
     const u = document.getElementById('login-user').value.toLowerCase();
     if (u === 'admin') State.user = { nombre: 'Super Admin', role: 'admin' };
-    else if (u === 'tecnico') State.user = { nombre: 'Técnico', role: 'tecnico' };
-    else return alert('admin o tecnico');
+    else if (u === 'tecnico') State.user = { nombre: 'Técnico Campo', role: 'tecnico' };
+    else return alert('Usuario: admin o tecnico');
     localStorage.setItem('cmms_user', JSON.stringify(State.user));
     location.reload();
   }
 
   function logout() { localStorage.removeItem('cmms_user'); location.reload(); }
 
+  function applyPermissions() {
+    const r = State.user.role;
+    if (r === 'admin') State.permissions = { canDelete: true, allowedViews: ['*'] };
+    else State.permissions = { canDelete: false, allowedViews: ['dashboard','ordenes_trabajo','mps','gantt'] };
+  }
+
+  // ── NAVEGACIÓN ───────────────────────────────
   function navigate(mod) {
     State.currentModule = mod;
     document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.id === 'nav-'+mod));
     if (mod === 'dashboard') renderDashboard();
+    else if (mod === 'gantt') renderGantt();
     else renderModule(mod);
   }
 
-  // ── RENDERIZADO ───────────────────────────────
+  // ── VISTAS ───────────────────────────────────
   function renderLogin() {
     document.getElementById('root').innerHTML = `
       <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#1c2228">
-        <div style="background:#262c33; padding:40px; border-radius:8px; width:350px; text-align:center; border:1px solid #3d444b">
-          <h2 style="margin-bottom:20px">CMMS ENTERPRISE</h2>
-          <input type="text" id="login-user" style="width:100%; padding:12px; margin-bottom:15px; background:#1c2228; border:1px solid #3d444b; color:#fff" placeholder="Usuario (admin)">
-          <button class="btn btn-primary" style="width:100%" onclick="login()">ENTRAR</button>
+        <div class="modal" style="display:block; width:350px; text-align:center">
+          <h2 style="letter-spacing:2px; margin-bottom:10px">CMMS ENTERPRISE</h2>
+          <p style="color:var(--text-dim); font-size:11px; margin-bottom:30px">PORTAL DE ACCESO SEGURO</p>
+          <div class="form-field">
+            <input type="text" id="login-user" class="form-input" placeholder="Usuario (admin / tecnico)" onkeypress="if(event.key==='Enter')login()">
+          </div>
+          <button class="btn btn-primary" style="width:100%; padding:12px" onclick="login()">INICIAR SESIÓN</button>
         </div>
       </div>`;
   }
@@ -132,21 +168,33 @@
       <header class="shell-bar">
         <div class="logo" onclick="navigate('dashboard')"><span>CCMS</span> SBNE</div>
         <div class="shell-right">
-          <div style="font-size:11px; color:var(--green)">● CONECTADO</div>
-          <button class="btn btn-ghost" onclick="logout()">SALIR</button>
+          <div style="font-size:11px; color:var(--green); font-weight:700">● CONECTADO</div>
+          <button class="btn btn-ghost" onclick="logout()">CERRAR SESIÓN</button>
         </div>
       </header>
       <div class="app-layout">
         <nav class="side-nav">
           <div class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')">📊 Dashboard</div>
+          
+          <div class="nav-group-hdr">PLANIFICACIÓN</div>
+          <div class="nav-item" id="nav-gantt" onclick="navigate('gantt')">📊 Diagrama de Gantt</div>
+          
           <div class="nav-group-hdr">MANTENIMIENTO</div>
           <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</div>
-          <div class="nav-group-hdr">ACTIVOS</div>
+          <div class="nav-item" id="nav-mps" onclick="navigate('mps')">📅 Planes de MP</div>
+          
+          <div class="nav-group-hdr">JERARQUÍA DE ACTIVOS</div>
           <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos Principales</div>
-          <div class="nav-group-hdr">INVENTARIOS</div>
+          <div class="nav-item" id="nav-procesos" onclick="navigate('procesos')">⚙ Procesos</div>
+          <div class="nav-item" id="nav-sitios" onclick="navigate('sitios')">🏗 Plantas / Sitios</div>
+          <div class="nav-item" id="nav-empresas" onclick="navigate('empresas')">🏢 Empresas</div>
+
+          <div class="nav-group-hdr">LOGÍSTICA</div>
           <div class="nav-item" id="nav-inventarios" onclick="navigate('inventarios')">📦 Stock / Almacén</div>
+          
           <div class="nav-group-hdr">SISTEMA</div>
-          <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Usuarios</div>
+          <div class="nav-item" id="nav-personal" onclick="navigate('personal')">👤 Personal Técnico</div>
+          <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Seguridad y Usuarios</div>
         </nav>
         <main class="main-content" id="main-content"></main>
       </div>`;
@@ -154,41 +202,90 @@
 
   async function renderDashboard() {
     document.getElementById('main-content').innerHTML = `
-      <h1>Dashboard Operacional</h1>
+      <h1 style="font-weight:300">Resumen Operacional</h1>
       <div class="kpi-grid">
-        <div class="kpi-card" style="border-left-color:var(--primary)"><div class="kpi-label">OT PENDIENTES</div><div class="kpi-val">0</div></div>
-        <div class="kpi-card" style="border-left-color:var(--yellow)"><div class="kpi-label">EN PROCESO</div><div class="kpi-val">0</div></div>
-        <div class="kpi-card" style="border-left-color:var(--green)"><div class="kpi-label">COMPLETADAS</div><div class="kpi-val">0</div></div>
+        <div class="kpi-card" style="border-left-color:var(--primary)"><div class="kpi-label">OT Pendientes</div><div class="kpi-val" id="kpi-p">...</div></div>
+        <div class="kpi-card" style="border-left-color:var(--yellow)"><div class="kpi-label">En Ejecución</div><div class="kpi-val" id="kpi-e">...</div></div>
+        <div class="kpi-card" style="border-left-color:var(--green)"><div class="kpi-label">Completadas Mes</div><div class="kpi-val" id="kpi-c">...</div></div>
       </div>
-      <div style="background:var(--surface); padding:30px; border-radius:8px; border:1px solid var(--border); text-align:center">
-        <h3>Bienvenido, ${State.user.nombre}</h3>
-        <p style="color:var(--text-dim); margin-top:10px">El sistema está sincronizado con Supabase en tiempo real.</p>
+      <div style="background:var(--surface); padding:40px; border-radius:12px; border:1px solid var(--border); text-align:center">
+        <h2 style="font-weight:400">¡Bienvenido, ${State.user.nombre}!</h2>
+        <p style="color:var(--text-dim); margin-top:15px; line-height:1.6">El sistema CMMS Enterprise está sincronizado y listo para la operación. Utiliza el menú lateral para gestionar órdenes o ver la planificación en tiempo real.</p>
       </div>`;
+    
+    try {
+      const ots = await api('ordenes_trabajo');
+      document.getElementById('kpi-p').textContent = ots.filter(o => o.estado === 'Aprobada' || o.estado === 'Programada').length;
+      document.getElementById('kpi-e').textContent = ots.filter(o => o.estado === 'En proceso').length;
+      document.getElementById('kpi-c').textContent = ots.filter(o => o.estado === 'Completada' || o.estado === 'Cerrada').length;
+    } catch(e) {}
   }
 
   async function renderModule(mod) {
     const sch = SCHEMA[mod];
     document.getElementById('main-content').innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center">
-        <h1>${sch.icon} ${sch.label}</h1>
-        <button class="btn btn-primary">+ Nuevo</button>
+        <div class="page-title-group">
+          <p style="font-size:11px; color:var(--text-dim); text-transform:uppercase">${sch.group}</p>
+          <h1 style="margin-top:4px">${sch.icon} ${sch.label}</h1>
+        </div>
+        <button class="btn btn-primary" onclick="alert('Funcionalidad de formulario en desarrollo')">+ Nuevo Registro</button>
       </div>
       <div class="grid-wrap" id="grid-container"><div class="spinner"></div></div>`;
     
     try {
-      const rows = await apiRequest(mod);
-      let html = `<table><thead><tr>${sch.fields.map(f => `<th>${f.replace('_',' ').toUpperCase()}</th>`).join('')}<th>ACCIONES</th></tr></thead><tbody>`;
-      rows.forEach(r => {
-        html += `<tr>${sch.fields.map(f => `<td>${r[f] || '—'}</td>`).join('')}<td><button class="btn btn-ghost">✏</button></td></tr>`;
+      const rows = await api(mod);
+      let html = `<table><thead><tr><th>#</th>${sch.fields.map(f => `<th>${f.replace(/_/g,' ').toUpperCase()}</th>`).join('')}<th>ACCIONES</th></tr></thead><tbody>`;
+      rows.forEach((r, i) => {
+        html += `<tr><td style="color:var(--text-dim); width:30px">${i+1}</td>${sch.fields.map(f => {
+          const val = r[f] || '—';
+          if (['Aprobada','Activo','Operativo','Completa'].includes(val)) return `<td><span class="badge badge-green">${val}</span></td>`;
+          if (['En proceso','Programada','Preventiva'].includes(val)) return `<td><span class="badge badge-blue">${val}</span></td>`;
+          if (['Alta','Crítica','Urgente'].includes(val)) return `<td><span class="badge badge-red">${val}</span></td>`;
+          return `<td>${val}</td>`;
+        }).join('')}
+        <td>
+          <div style="display:flex; gap:5px">
+            ${mod === 'ordenes_trabajo' ? `<button class="btn btn-ghost btn-icon" title="Imprimir" onclick="alert('Función de PDF lista para integrar')">🖨</button>` : ''}
+            <button class="btn btn-ghost btn-icon">✏</button>
+            ${State.permissions.canDelete ? `<button class="btn btn-danger btn-icon">🗑</button>` : ''}
+          </div>
+        </td></tr>`;
       });
       html += '</tbody></table>';
-      document.getElementById('grid-container').innerHTML = rows.length ? html : '<div style="padding:40px; text-align:center">Sin datos</div>';
+      document.getElementById('grid-container').innerHTML = rows.length ? html : '<div style="padding:60px; text-align:center; color:var(--text-dim)">📂 Sin registros en esta tabla</div>';
     } catch (e) {
-      document.getElementById('grid-container').innerHTML = '<div style="padding:40px; color:var(--red)">Error al conectar con la base de datos</div>';
+      document.getElementById('grid-container').innerHTML = '<div style="padding:60px; text-align:center; color:var(--red)">❌ Error al conectar con Supabase. Verifica tu conexión.</div>';
     }
   }
 
-  window.onload = init;
+  async function renderGantt() {
+    document.getElementById('main-content').innerHTML = `<h1>📊 Planificación de Mantenimiento (Gantt)</h1><div class="gantt-chart" id="gantt-wrap"><div class="spinner"></div></div>`;
+    try {
+      const ots = await api('ordenes_trabajo');
+      const filtered = ots.filter(o => o.fecha_inicio_programada).sort((a,b) => a.fecha_inicio_programada.localeCompare(b.fecha_inicio_programada));
+      
+      let html = `<div class="gantt-sidebar"><div style="padding:15px; border-bottom:1px solid var(--border); font-weight:700">ORDEN</div>`;
+      filtered.forEach(ot => html += `<div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:12px">${ot.numero_ot}</div>`);
+      html += `</div><div class="gantt-body"><div class="gantt-timeline">`;
+      
+      const now = new Date();
+      for(let i=0; i<15; i++) {
+        const d = new Date(now); d.setDate(d.getDate() + i);
+        html += `<div class="gantt-day">${d.getDate()}/${d.getMonth()+1}</div>`;
+      }
+      html += `</div>`;
+      
+      filtered.forEach(ot => {
+        const start = new Date(ot.fecha_inicio_programada);
+        const dayDiff = Math.floor((start - now) / (1000*60*60*24));
+        const left = Math.max(0, dayDiff * 60);
+        html += `<div class="gantt-row"><div class="gantt-bar" style="left:${left}px; width:120px; background:var(--primary)">${ot.estado}</div></div>`;
+      });
+      html += `</div>`;
+      document.getElementById('gantt-wrap').innerHTML = html;
+    } catch(e) { document.getElementById('gantt-wrap').innerHTML = "Error al cargar Gantt"; }
+  }
 </script>
 </body>
 </html>
