@@ -3,203 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CMMS Enterprise — Full System</title>
+<title>CMMS Enterprise — CCMS SBNE</title>
 <style>
-  /* ESTILOS INTEGRADOS PARA EVITAR FALLOS DE RUTA */
   :root {
     --bg: #1c2228; --surface: #262c33; --surface2: #343d46;
     --primary: #0070f2; --text: #f0f2f5; --text-dim: #a0aab4;
-    --border: #3d444b; --red: #ff4d4d; --green: #48bb78; --yellow: #f6ad55;
+    --border: #3d444b; --red: #ff4d4d; --green: #107e3e; --yellow: #e9730c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
   
   /* SHELL */
   .shell-bar { height: 48px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 1000; }
-  .logo { font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .logo-main { color: var(--primary); }
-  .shell-right { display: flex; align-items: center; gap: 20px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-  
+  .logo { font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .logo span { color: var(--primary); }
+  .shell-right { display: flex; align-items: center; gap: 15px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+
   /* LAYOUT */
   .app-layout { display: flex; padding-top: 48px; height: 100vh; }
   .side-nav { width: 240px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px 10px; flex-shrink: 0; }
-  .main-content { flex-grow: 1; overflow-y: auto; background: var(--bg); padding: 20px; }
-  
-  /* MENU */
-  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--text-dim); text-decoration: none; border-radius: 6px; font-size: 13px; margin-bottom: 4px; cursor: pointer; transition: .2s; }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .main-content { flex-grow: 1; overflow-y: auto; padding: 20px; position: relative; }
+
+  /* NAV */
+  .nav-group-hdr { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin: 20px 0 8px 12px; letter-spacing: 1px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; color: var(--text-dim); text-decoration: none; border-radius: 4px; font-size: 13px; cursor: pointer; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--surface2); color: #fff; }
   .nav-item.active { background: var(--primary); color: #fff; font-weight: 600; }
-  .nav-group-hdr { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin: 20px 0 10px 12px; letter-spacing: 1px; }
 
-  /* DASHBOARD */
-  .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-  .kpi-card { background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
-  .kpi-val { font-size: 28px; font-weight: 700; margin: 10px 0; }
-  .kpi-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
+  /* GRID */
+  .grid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface2); padding: 12px; text-align: left; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 600; }
+  td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:hover { background: rgba(255,255,255,0.03); }
 
-  /* UI COMPONENTS */
-  .btn { padding: 8px 16px; border-radius: 4px; font-size: 13px; border: none; cursor: pointer; font-weight: 600; transition: .2s; }
+  /* UI */
+  .btn { padding: 8px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: .2s; }
   .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { opacity: 0.9; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
   .btn-danger { background: var(--red); color: #fff; }
-  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
-  
-  /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
-  .modal { background: var(--surface); width: 100%; max-width: 500px; border-radius: 8px; border: 1px solid var(--border); padding: 25px; }
-  .form-field { margin-bottom: 15px; }
-  .form-label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 5px; }
-  .form-input { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: #fff; border-radius: 4px; }
-
-  /* UTILS */
+  .badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .badge-green { background: rgba(16,126,62,0.2); color: #48bb78; }
+  .badge-blue { background: rgba(0,112,242,0.2); color: #4dabff; }
+  .badge-yellow { background: rgba(233,115,12,0.2); color: #f6ad55; }
   .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .no-access { padding: 50px; text-align: center; color: var(--text-dim); }
+
+  /* DASHBOARD */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
+  .kpi-card { background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border); border-left: 4px solid var(--primary); }
+  .kpi-val { font-size: 28px; font-weight: 700; margin: 5px 0; }
 </style>
 </head>
 <body>
 
-<div id="auth-root"></div>
+<div id="root"></div>
 
 <script>
   // ── CONFIGURACIÓN SUPABASE ─────────────────────
-  const SUPABASE_URL = 'https://xwciwrtenrdvhwvvjkzt.supabase.co/rest/v1/';
-  const SUPABASE_KEY = 'sb_publishable_RIfaIPuzvQ27Drwp-vx-MQ_o6_xgoGt';
+  const CONFIG = {
+    url: 'https://xwciwrtenrdvhwvvjkzt.supabase.co/rest/v1/',
+    key: 'sb_publishable_RIfaIPuzvQ27Drwp-vx-MQ_o6_xgoGt'
+  };
 
   const State = {
     user: JSON.parse(localStorage.getItem('cmms_user')) || null,
     currentModule: 'dashboard',
-    permissions: { canDelete: false, allowedViews: [] }
+    rows: [],
+    permissions: { canDelete: false, allowedViews: ['*'] }
   };
 
-  // ── MOTOR DE NAVEGACIÓN ────────────────────────
+  const SCHEMA = {
+    ordenes_trabajo: { label: "Órdenes de Trabajo", group: "Mantenimiento", icon: "📋", fields: ["numero_ot", "tipo_ot", "prioridad", "estado", "fecha_inicio_programada"] },
+    activos_principales: { label: "Activos Principales", group: "Activos", icon: "🏭", fields: ["codigo", "nombre", "marca", "modelo", "estado"] },
+    inventarios: { label: "Inventarios", group: "Inventarios", icon: "📦", fields: ["stock_actual", "costo_unitario", "almacen"] },
+    personal: { label: "Personal", group: "Recursos", icon: "👤", fields: ["nombre", "apellido", "especialidad", "estado"] },
+    usuarios: { label: "Usuarios", group: "Sistema", icon: "🔑", fields: ["username", "nombre_completo", "rol_id", "estado"] }
+  };
+
+  // ── API ENGINE ────────────────────────────────
+  async function apiRequest(table, method = 'GET', body = null) {
+    const url = `${CONFIG.url}${table.toLowerCase()}?select=*`;
+    const headers = { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json' };
+    const res = await fetch(url, { method, headers });
+    return res.json();
+  }
+
+  // ── NAVEGACIÓN ────────────────────────────────
   function init() {
-    console.log("Iniciando motor...");
-    if (!State.user) {
-      renderLogin();
-    } else {
-      applyPermissions();
-      renderShell();
-      navigate('dashboard');
-    }
-  }
-
-  function applyPermissions() {
-    const r = State.user.role;
-    if (r === 'Super Admin' || r === 'admin') {
-      State.permissions = { canDelete: true, allowedViews: ['*'] };
-    } else if (r === 'Supervisor') {
-      State.permissions = { canDelete: false, allowedViews: ['dashboard','activos','manto','inventarios'] };
-    } else {
-      State.permissions = { canDelete: false, allowedViews: ['dashboard','manto','calendario'] };
-    }
-  }
-
-  function renderLogin() {
-    document.getElementById('auth-root').innerHTML = `
-      <div style="height:100vh; display:flex; align-items:center; justify-content:center">
-        <div class="modal" style="display:block">
-          <h2 style="text-align:center; margin-bottom:30px">CMMS ENTERPRISE</h2>
-          <div class="form-field">
-            <label class="form-label">Usuario</label>
-            <input type="text" id="login-user" class="form-input" placeholder="admin / tecnico">
-          </div>
-          <button class="btn btn-primary" style="width:100%; margin-top:10px" onclick="login()">ENTRAR</button>
-        </div>
-      </div>`;
+    if (!State.user) return renderLogin();
+    renderShell();
+    navigate('dashboard');
   }
 
   function login() {
     const u = document.getElementById('login-user').value.toLowerCase();
-    if (u === 'admin') State.user = { id: 1, nombre: 'Admin', role: 'admin' };
-    else if (u === 'tecnico') State.user = { id: 2, nombre: 'Técnico', role: 'tecnico' };
-    else return alert('Usuario no válido (admin / tecnico)');
-    
+    if (u === 'admin') State.user = { nombre: 'Super Admin', role: 'admin' };
+    else if (u === 'tecnico') State.user = { nombre: 'Técnico', role: 'tecnico' };
+    else return alert('admin o tecnico');
     localStorage.setItem('cmms_user', JSON.stringify(State.user));
     location.reload();
   }
 
-  function logout() {
-    localStorage.removeItem('cmms_user');
-    location.reload();
+  function logout() { localStorage.removeItem('cmms_user'); location.reload(); }
+
+  function navigate(mod) {
+    State.currentModule = mod;
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.id === 'nav-'+mod));
+    if (mod === 'dashboard') renderDashboard();
+    else renderModule(mod);
+  }
+
+  // ── RENDERIZADO ───────────────────────────────
+  function renderLogin() {
+    document.getElementById('root').innerHTML = `
+      <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#1c2228">
+        <div style="background:#262c33; padding:40px; border-radius:8px; width:350px; text-align:center; border:1px solid #3d444b">
+          <h2 style="margin-bottom:20px">CMMS ENTERPRISE</h2>
+          <input type="text" id="login-user" style="width:100%; padding:12px; margin-bottom:15px; background:#1c2228; border:1px solid #3d444b; color:#fff" placeholder="Usuario (admin)">
+          <button class="btn btn-primary" style="width:100%" onclick="login()">ENTRAR</button>
+        </div>
+      </div>`;
   }
 
   function renderShell() {
-    document.getElementById('auth-root').innerHTML = `
+    document.getElementById('root').innerHTML = `
       <header class="shell-bar">
-        <div class="logo" onclick="navigate('dashboard')">
-          <span class="logo-main">CCMS</span> SBNE
-        </div>
+        <div class="logo" onclick="navigate('dashboard')"><span>CCMS</span> SBNE</div>
         <div class="shell-right">
-          <div style="display:flex; align-items:center; gap:8px; font-size:11px">
-            <div class="status-dot" style="background:var(--green)"></div>
-            CONECTADO
-          </div>
+          <div style="font-size:11px; color:var(--green)">● CONECTADO</div>
           <button class="btn btn-ghost" onclick="logout()">SALIR</button>
         </div>
       </header>
       <div class="app-layout">
         <nav class="side-nav">
-          <div class="nav-group-hdr">MENÚ PRINCIPAL</div>
-          <a class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')">📊 Dashboard</a>
-          <a class="nav-item" id="nav-manto" onclick="navigate('manto')">📋 Mantenimiento</a>
-          <a class="nav-item" id="nav-activos" onclick="navigate('activos')">🏭 Activos</a>
-          <a class="nav-item" id="nav-inventario" onclick="navigate('inventarios')">📦 Inventarios</a>
+          <div class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')">📊 Dashboard</div>
+          <div class="nav-group-hdr">MANTENIMIENTO</div>
+          <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</div>
+          <div class="nav-group-hdr">ACTIVOS</div>
+          <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos Principales</div>
+          <div class="nav-group-hdr">INVENTARIOS</div>
+          <div class="nav-item" id="nav-inventarios" onclick="navigate('inventarios')">📦 Stock / Almacén</div>
           <div class="nav-group-hdr">SISTEMA</div>
-          <a class="nav-item" onclick="navigate('usuarios')">👤 Usuarios</a>
-          <a class="nav-item" onclick="navigate('negocio')">🏢 Mi Negocio</a>
+          <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Usuarios</div>
         </nav>
-        <main class="main-content" id="main-content">
-          <div class="spinner"></div>
-        </main>
+        <main class="main-content" id="main-content"></main>
       </div>`;
   }
 
-  async function navigate(module) {
-    // Check permissions
-    if (State.permissions.allowedViews[0] !== '*' && !State.permissions.allowedViews.includes(module)) {
-      if (module !== 'dashboard') {
-        document.getElementById('main-content').innerHTML = '<div class="no-access">⛔ No tienes permiso para ver este módulo</div>';
-        return;
-      }
-    }
-
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    const activeNav = document.getElementById('nav-' + module);
-    if (activeNav) activeNav.classList.add('active');
-
-    if (module === 'dashboard') renderDashboard();
-    else renderModule(module);
-  }
-
-  function renderDashboard() {
+  async function renderDashboard() {
     document.getElementById('main-content').innerHTML = `
-      <h1>Resumen General</h1>
-      <div class="dashboard-grid" style="margin-top:20px">
-        <div class="kpi-card"><div class="kpi-label">OT Pendientes</div><div class="kpi-val" style="color:var(--primary)">0</div></div>
-        <div class="kpi-card"><div class="kpi-label">En Proceso</div><div class="kpi-val" style="color:var(--yellow)">0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Completadas</div><div class="kpi-val" style="color:var(--green)">0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Fallas</div><div class="kpi-val" style="color:var(--red)">0</div></div>
+      <h1>Dashboard Operacional</h1>
+      <div class="kpi-grid">
+        <div class="kpi-card" style="border-left-color:var(--primary)"><div class="kpi-label">OT PENDIENTES</div><div class="kpi-val">0</div></div>
+        <div class="kpi-card" style="border-left-color:var(--yellow)"><div class="kpi-label">EN PROCESO</div><div class="kpi-val">0</div></div>
+        <div class="kpi-card" style="border-left-color:var(--green)"><div class="kpi-label">COMPLETADAS</div><div class="kpi-val">0</div></div>
       </div>
       <div style="background:var(--surface); padding:30px; border-radius:8px; border:1px solid var(--border); text-align:center">
-        <h3>¡Bienvenido de nuevo, ${State.user.nombre}!</h3>
-        <p style="color:var(--text-dim); margin-top:10px">Selecciona un módulo en el menú lateral para empezar.</p>
+        <h3>Bienvenido, ${State.user.nombre}</h3>
+        <p style="color:var(--text-dim); margin-top:10px">El sistema está sincronizado con Supabase en tiempo real.</p>
       </div>`;
   }
 
-  function renderModule(name) {
+  async function renderModule(mod) {
+    const sch = SCHEMA[mod];
     document.getElementById('main-content').innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center">
-        <h1 style="text-transform:capitalize">${name}</h1>
-        <button class="btn btn-primary">+ Nuevo Registro</button>
+        <h1>${sch.icon} ${sch.label}</h1>
+        <button class="btn btn-primary">+ Nuevo</button>
       </div>
-      <div style="margin-top:20px; background:var(--surface); padding:40px; border-radius:8px; border:1px solid var(--border); text-align:center">
-        <div style="font-size:40px; margin-bottom:15px">📂</div>
-        <p style="color:var(--text-dim)">Cargando datos de ${name} desde Supabase...</p>
-        <div class="spinner"></div>
-      </div>`;
+      <div class="grid-wrap" id="grid-container"><div class="spinner"></div></div>`;
+    
+    try {
+      const rows = await apiRequest(mod);
+      let html = `<table><thead><tr>${sch.fields.map(f => `<th>${f.replace('_',' ').toUpperCase()}</th>`).join('')}<th>ACCIONES</th></tr></thead><tbody>`;
+      rows.forEach(r => {
+        html += `<tr>${sch.fields.map(f => `<td>${r[f] || '—'}</td>`).join('')}<td><button class="btn btn-ghost">✏</button></td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('grid-container').innerHTML = rows.length ? html : '<div style="padding:40px; text-align:center">Sin datos</div>';
+    } catch (e) {
+      document.getElementById('grid-container').innerHTML = '<div style="padding:40px; color:var(--red)">Error al conectar con la base de datos</div>';
+    }
   }
 
   window.onload = init;
