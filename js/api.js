@@ -39,7 +39,10 @@ const API = (() => {
     const options = { method, headers };
     if (body) options.body = JSON.stringify(body);
 
-    const res = await fetch(url, options);
+    const res = await Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de espera agotado')), 8000))
+    ]);
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.message || `HTTP ${res.status}`);

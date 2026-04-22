@@ -128,12 +128,16 @@ function logout() {
     module === 'configuracion_negocio' ? 'Datos del Negocio' :
     (SCHEMA[module]?.label || module);
 
+  const isConfigured = !!API.getConfig().url;
+  updateConnStatus(isConfigured);
+
   if (module === 'dashboard')     renderDashboard();
   else if (module === 'configuracion') renderConfig();
   else if (module === 'calendario') renderCalendar();
   else if (module === 'gantt')      renderGantt();
   else if (module === 'ordenes_en_proceso') renderOrdersInProcess();
-  else                            renderModule(module);
+  else if (SCHEMA[module])          renderModule(module);
+  else                              console.warn("Modulo no definido:", module);
 }
 
 async function renderOrdersInProcess() {
