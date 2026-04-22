@@ -77,78 +77,192 @@
   };
 
   const SCHEMA = {
-    sitios: { label: "Plantas / Sitios", group: "Jerarquía", icon: "🏗", fields: [
+    empresas: { label: "Empresas", group: "Jerarquía", icon: "🏢", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "codigo", label: "Código Sitio", required: true},
-      {key: "nombre", label: "Nombre Sitio", required: true},
-      {key: "rfc", label: "RFC / ID Fiscal"},
+      {key: "codigo", label: "Código", required: true},
+      {key: "nombre", label: "Nombre", required: true},
       {key: "pais", label: "País"},
       {key: "ciudad", label: "Ciudad"},
       {key: "direccion", label: "Dirección"},
-      {key: "contacto", label: "Persona Contacto"},
+      {key: "contacto", label: "Contacto"},
+      {key: "telefono", label: "Teléfono"},
+      {key: "email", label: "Email"},
+      {key: "estado", label: "Estado", type: "select", options: ["Activa","Inactiva"]}
+    ]},
+    sitios: { label: "Plantas / Sitios", group: "Jerarquía", icon: "🏗", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "empresa_id", label: "ID Empresa"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "rfc", label: "RFC"},
+      {key: "pais", label: "País"},
+      {key: "ciudad", label: "Ciudad"},
+      {key: "direccion", label: "Dirección"},
+      {key: "contacto", label: "Contacto"},
       {key: "telefono", label: "Teléfono"},
       {key: "email", label: "Email"},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
+    unidades_negocio: { label: "Unidades Negocio", group: "Jerarquía", icon: "🏛", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "sitio_id", label: "ID Sitio"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "tipo", label: "Tipo"},
+      {key: "responsable_id", label: "Resp. ID"},
+      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
+    ]},
     ubicaciones: { label: "Ubicaciones", group: "Jerarquía", icon: "📍", fields: [
       {key: "id", pk: true, hidden: true},
-      {key: "codigo", label: "Código Ubicación"},
-      {key: "nombre", label: "Nombre Ubicación"},
-      {key: "descripcion", label: "Descripción"},
-      {key: "planta", label: "Planta / Nave"},
-      {key: "area", label: "Área / Sector"},
-      {key: "padre_id", label: "Ubicación Padre ID"}
+      {key: "unidad_id", label: "ID Unidad"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "planta", label: "Planta"},
+      {key: "area", label: "Área"},
+      {key: "padre_id", label: "Padre ID"}
+    ]},
+    procesos: { label: "Procesos", group: "Jerarquía", icon: "⚙", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "ubicacion_id", label: "ID Ubicación"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "tipo_proceso", label: "Tipo"},
+      {key: "responsable_id", label: "Resp. ID"},
+      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     activos_principales: { label: "Activos Principales", group: "Jerarquía", icon: "🏭", fields: [
       {key: "id", pk: true, hidden: true},
+      {key: "proceso_id", label: "ID Proceso"},
+      {key: "ubicacion_id", label: "ID Ubicación"},
       {key: "codigo", label: "Tag / Código"},
-      {key: "nombre", label: "Nombre Activo"},
-      {key: "descripcion", label: "Descripción Técnica"},
+      {key: "nombre", label: "Nombre"},
       {key: "marca", label: "Marca"},
       {key: "modelo", label: "Modelo"},
       {key: "numero_serie", label: "Nº Serie"},
-      {key: "fecha_fabricacion", label: "F. Fabricación", type: "date"},
+      {key: "anio_fabricacion", label: "Año Fab."},
       {key: "fecha_instalacion", label: "F. Instalación", type: "date"},
       {key: "criticidad", label: "Criticidad", type: "select", options: ["A - Crítica", "B - Importante", "C - Soporte"]},
       {key: "estado", label: "Estado", type: "select", options: ["Operativo","Fuera de servicio","En falla"]}
     ]},
+    sub_activos: { label: "Sub-Activos", group: "Jerarquía", icon: "🔧", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "activo_principal_id", label: "ID Activo"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "marca", label: "Marca"},
+      {key: "modelo", label: "Modelo"},
+      {key: "numero_serie", label: "Nº Serie"}
+    ]},
+    sistemas: { label: "Sistemas", group: "Jerarquía", icon: "🔩", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "sub_activo_id", label: "ID Sub-Activo"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "tipo_sistema", label: "Tipo"},
+      {key: "fabricante", label: "Fabricante"}
+    ]},
+    componentes: { label: "Componentes", group: "Jerarquía", icon: "⚙", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "sistema_id", label: "ID Sistema"},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "cantidad", label: "Cant.", type: "number"},
+      {key: "vida_util_horas", label: "Vida Útil (Hrs)", type: "number"},
+      {key: "fecha_instalacion", label: "F. Instalación", type: "date"},
+      {key: "estado", label: "Estado"}
+    ]},
+    despiece: { label: "Despiece", group: "Jerarquía", icon: "📐", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "componente_id", label: "ID Componente"},
+      {key: "codigo_parte", label: "Cód. Parte"},
+      {key: "descripcion", label: "Descripción"},
+      {key: "cantidad_requerida", label: "Cant.", type: "number"},
+      {key: "material", label: "Material"},
+      {key: "fabricante", label: "Fabricante"}
+    ]},
     mps: { label: "Planes MP", group: "Mantenimiento", icon: "📅", fields: [
       {key: "id", pk: true, hidden: true},
       {key: "codigo_mp", label: "Código MP"},
-      {key: "nombre_mp", label: "Nombre del Plan"},
-      {key: "descripcion", label: "Descripción de Tareas"},
-      {key: "frecuencia", label: "Frecuencia (Valor)", type: "number"},
+      {key: "nombre_mp", label: "Nombre Plan"},
+      {key: "frecuencia", label: "Frecuencia", type: "number"},
       {key: "unidad_frecuencia", label: "Unidad", type: "select", options: ["Días", "Semanas", "Meses", "Horas"]},
       {key: "tipo_mantenimiento", label: "Tipo", type: "select", options: ["Preventivo", "Predictivo", "Legal"]},
+      {key: "activo_principal_id", label: "ID Activo"},
+      {key: "especialidad_id", label: "ID Especialidad"},
       {key: "tiempo_estimado_horas", label: "Tiempo Est. (Hrs)"},
-      {key: "estado", label: "Estado", type: "select", options: ["Activo","Borrador"]}
+      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     ordenes_trabajo: { label: "Órdenes de Trabajo", group: "Mantenimiento", icon: "📋", fields: [
       {key: "id", pk: true, hidden: true},
       {key: "numero_ot", label: "Nº Orden", required: true},
       {key: "tipo_ot", label: "Tipo OT", type: "select", options: ["Preventiva", "Correctiva", "Emergencia", "Mejora"]},
+      {key: "sub_activo_id", label: "ID Sub-Activo"},
+      {key: "mp_id", label: "ID Plan MP"},
       {key: "prioridad", label: "Prioridad", type: "select", options: ["Baja", "Media", "Alta", "Urgente"]},
-      {key: "descripcion_falla", label: "Descripción de Falla"},
+      {key: "descripcion_falla", label: "Descripción Falla"},
       {key: "descripcion_trabajo", label: "Trabajo Realizado"},
+      {key: "personal_asignado_id", label: "Personal ID"},
       {key: "fecha_inicio_programada", label: "Inicio Prog.", type: "date"},
       {key: "fecha_fin_programada", label: "Fin Prog.", type: "date"},
       {key: "fecha_inicio_real", label: "Inicio Real", type: "date"},
       {key: "fecha_fin_real", label: "Fin Real", type: "date"},
-      {key: "costo_mano_obra", label: "Costo MO ($)"},
-      {key: "costo_materiales", label: "Costo Mat ($)"},
-      {key: "costo_total", label: "Costo Total ($)"},
+      {key: "horas_reales", label: "Horas Reales", type: "number"},
+      {key: "costo_mano_obra", label: "Costo MO ($)", type: "number"},
+      {key: "costo_materiales", label: "Costo Mat ($)", type: "number"},
+      {key: "costo_total", label: "Costo Total ($)", type: "number"},
       {key: "causa_raiz", label: "Causa Raíz"},
+      {key: "accion_correctiva", label: "Acción Corr."},
       {key: "estado", label: "Estado", type: "select", options: ["Pendiente", "Aprobada", "En proceso", "Completada", "Cerrada"]}
+    ]},
+    planes_seguridad: { label: "Planes de Seguridad", group: "Mantenimiento", icon: "🛡", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "codigo", label: "Código"},
+      {key: "nombre", label: "Nombre"},
+      {key: "riesgos_identificados", label: "Riesgos"},
+      {key: "epp_requerido", label: "EPP Requerido"},
+      {key: "procedimiento_seguridad", label: "Procedimiento"},
+      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
+    ]},
+    orden_de_compra: { label: "Órdenes de Compra", group: "Logística", icon: "🛒", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "numero_oc", label: "Nº OC"},
+      {key: "proveedor_id", label: "ID Proveedor"},
+      {key: "fecha_pedido", label: "F. Pedido", type: "date"},
+      {key: "fecha_entrega_estimada", label: "F. Entrega Est.", type: "date"},
+      {key: "monto_total", label: "Monto Total", type: "number"},
+      {key: "moneda", label: "Moneda"},
+      {key: "estado", label: "Estado"},
+      {key: "notas", label: "Notas"}
     ]},
     personal: { label: "Personal Técnico", group: "Recursos", icon: "👤", fields: [
       {key: "id", pk: true, hidden: true},
+      {key: "numero_empleado", label: "Nº Emp."},
       {key: "nombre", label: "Nombre"},
       {key: "apellido", label: "Apellido"},
-      {key: "numero_empleado", label: "Nº Empleado"},
-      {key: "cargo", label: "Cargo / Puesto"},
+      {key: "cargo", label: "Cargo"},
+      {key: "especialidad_id", label: "Especialidad ID"},
       {key: "turno", label: "Turno"},
+      {key: "telefono", label: "Teléfono"},
       {key: "email", label: "Email"},
       {key: "fecha_ingreso", label: "F. Ingreso", type: "date"},
+      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
+    ]},
+    especialidades: { label: "Especialidades", group: "Recursos", icon: "🎓", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "nombre", label: "Nombre"},
+      {key: "descripcion", label: "Descripción"},
+      {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
+    ]},
+    servicios_contratistas: { label: "Contratistas", group: "Recursos", icon: "🏢", fields: [
+      {key: "id", pk: true, hidden: true},
+      {key: "codigo", label: "Código"},
+      {key: "nombre_empresa", label: "Nombre"},
+      {key: "rfc_tax_id", label: "RFC"},
+      {key: "especialidad", label: "Especialidad"},
+      {key: "contacto_nombre", label: "Contacto"},
+      {key: "telefono", label: "Teléfono"},
+      {key: "email", label: "Email"},
+      {key: "calificacion", label: "Calificación"},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]}
   };
@@ -222,12 +336,26 @@
           <div class="nav-group-hdr">MANTENIMIENTO</div>
           <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</div>
           <div class="nav-item" id="nav-mps" onclick="navigate('mps')">📅 Planes de MP</div>
-          <div class="nav-group-hdr">JERARQUÍA</div>
-          <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos</div>
+          <div class="nav-item" id="nav-planes_seguridad" onclick="navigate('planes_seguridad')">🛡 Planes de Seguridad</div>
+          <div class="nav-group-hdr">JERARQUÍA DE ACTIVOS</div>
+          <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos Principales</div>
+          <div class="nav-item" id="nav-sub_activos" onclick="navigate('sub_activos')">🔧 Sub-Activos</div>
+          <div class="nav-item" id="nav-sistemas" onclick="navigate('sistemas')">🔩 Sistemas</div>
+          <div class="nav-item" id="nav-componentes" onclick="navigate('componentes')">⚙ Componentes</div>
+          <div class="nav-item" id="nav-despiece" onclick="navigate('despiece')">📐 Despiece</div>
+          <div class="nav-item" id="nav-procesos" onclick="navigate('procesos')">⚙ Procesos</div>
           <div class="nav-item" id="nav-ubicaciones" onclick="navigate('ubicaciones')">📍 Ubicaciones</div>
+          <div class="nav-item" id="nav-unidades_negocio" onclick="navigate('unidades_negocio')">🏛 Unidades Negocio</div>
           <div class="nav-item" id="nav-sitios" onclick="navigate('sitios')">🏗 Sitios / Plantas</div>
+          <div class="nav-item" id="nav-empresas" onclick="navigate('empresas')">🏢 Empresas</div>
+          <div class="nav-group-hdr">LOGÍSTICA Y COMPRAS</div>
+          <div class="nav-item" id="nav-orden_de_compra" onclick="navigate('orden_de_compra')">🛒 Órdenes de Compra</div>
           <div class="nav-group-hdr">RECURSOS</div>
-          <div class="nav-item" id="nav-personal" onclick="navigate('personal')">👤 Personal</div>
+          <div class="nav-item" id="nav-personal" onclick="navigate('personal')">👤 Personal Técnico</div>
+          <div class="nav-item" id="nav-especialidades" onclick="navigate('especialidades')">🎓 Especialidades</div>
+          <div class="nav-item" id="nav-servicios_contratistas" onclick="navigate('servicios_contratistas')">🏢 Contratistas Externos</div>
+          <div class="nav-group-hdr">SISTEMA</div>
+          <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Usuarios</div>
         </nav>
         <main class="main-content" id="main-content"></main>
       </div>
