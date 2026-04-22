@@ -25,38 +25,43 @@ const State = {
 // ═══════════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
-  const savedUser = localStorage.getItem('cmms_user');
-  if (savedUser) {
-    State.user = JSON.parse(savedUser);
-    applyPermissions();
-    // Si ya estamos logueados, el HTML base ya tiene el shell
-    navigate('dashboard');
-  } else {
+window.onload = () => {
+  console.log("App starting...");
+  try {
+    const savedUser = localStorage.getItem('cmms_user');
+    if (savedUser) {
+      State.user = JSON.parse(savedUser);
+      applyPermissions();
+      navigate('dashboard');
+    } else {
+      renderLogin();
+    }
+  } catch (e) {
+    console.error("Boot error:", e);
     renderLogin();
   }
-});
+};
 
 function renderLogin() {
   document.body.innerHTML = `
-    <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#1c2228">
-      <div class="modal" style="display:block; opacity:1; pointer-events:all; width:350px; position:static; transform:none">
+    <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#1c2228; color:#fff; font-family:sans-serif">
+      <div class="modal" style="display:block; opacity:1; pointer-events:all; width:350px; position:static; transform:none; background:#262c33; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5)">
         <div class="modal-header" style="justify-content:center; border:none; padding-top:40px">
           <div style="text-align:center">
             <div style="font-size:24px; font-weight:700; color:#fff; letter-spacing:1px">CMMS ENTERPRISE</div>
-            <div style="font-size:10px; color:var(--text-sub); text-transform:uppercase; margin-top:5px">Portal de Acceso Seguro</div>
+            <div style="font-size:10px; color:#888; text-transform:uppercase; margin-top:5px">Portal de Acceso Seguro</div>
           </div>
         </div>
         <div class="modal-body" style="padding:30px">
-          <div class="form-field">
-            <label class="form-label">Usuario</label>
-            <input type="text" id="login-user" class="form-input" placeholder="admin / supervisor / tecnico" onkeypress="if(event.key==='Enter')handleLogin()">
+          <div class="form-field" style="margin-bottom:15px">
+            <label style="display:block; font-size:12px; margin-bottom:5px; color:#aaa">Usuario</label>
+            <input type="text" id="login-user" style="width:100%; padding:10px; background:#1c2228; border:1px solid #3d444b; color:#fff; border-radius:4px" placeholder="admin / tecnico" onkeypress="if(event.key==='Enter')handleLogin()">
           </div>
-          <div class="form-field" style="margin-top:20px">
-            <label class="form-label">Contraseña</label>
-            <input type="password" id="login-pass" class="form-input" placeholder="••••••" onkeypress="if(event.key==='Enter')handleLogin()">
+          <div class="form-field" style="margin-bottom:15px">
+            <label style="display:block; font-size:12px; margin-bottom:5px; color:#aaa">Contraseña</label>
+            <input type="password" id="login-pass" style="width:100%; padding:10px; background:#1c2228; border:1px solid #3d444b; color:#fff; border-radius:4px" placeholder="••••••" onkeypress="if(event.key==='Enter')handleLogin()">
           </div>
-          <button class="btn btn-primary" style="width:100%; margin-top:30px; padding:12px" onclick="handleLogin()">INICIAR SESIÓN</button>
+          <button style="width:100%; padding:12px; background:#0070f2; border:none; color:#fff; font-weight:600; border-radius:4px; cursor:pointer; margin-top:15px" onclick="handleLogin()">INICIAR SESIÓN</button>
         </div>
       </div>
     </div>`;
@@ -310,13 +315,14 @@ async function renderDashboard() {
       </div>
     </div>`;
 
-  let data;
+  let data = API.getMockDashboard();
   try {
-    data = State.useMock ? API.getMockDashboard() : await API.getDashboard();
+    if (!State.useMock) {
+      const liveData = await API.getDashboard();
+      if (liveData) data = liveData;
+    }
   } catch (e) {
-    console.error("Dashboard error:", e);
-    data = API.getMockDashboard();
-    toast('Usando datos locales (error de conexión)', 'warning');
+    console.warn("Dashboard offline, using mock:", e);
   }
 
   document.getElementById('kpiGrid').innerHTML = `
