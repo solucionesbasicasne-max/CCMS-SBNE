@@ -6,8 +6,8 @@
 
 const API = (() => {
   // ── CONFIG ─────────────────────────────────────────────
-  let SUPABASE_URL = localStorage.getItem('cmms_supabase_url') || '';
-  let SUPABASE_KEY = localStorage.getItem('cmms_supabase_key') || '';
+  let SUPABASE_URL = localStorage.getItem('cmms_supabase_url') || 'https://xwciwrtenrdvhwvvjkzt.supabase.co/rest/v1/';
+  let SUPABASE_KEY = localStorage.getItem('cmms_supabase_key') || 'sb_publishable_RIfaIPuzvQ27Drwp-vx-MQ_o6_xgoGt';
 
   function setConfig(url, key) {
     SUPABASE_URL = url.trim();
