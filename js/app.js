@@ -83,7 +83,7 @@ function applyPermissions() {
   if (!State.user) return;
   const r = State.user.role;
   
-  if (r === 'Super Admin') {
+  if (r === 'Super Admin' || r === 'admin') {
     State.permissions = { canDelete: true, allowedViews: ['*'] };
   } else if (r === 'Supervisor') {
     State.permissions = { canDelete: false, allowedViews: ['dashboard','activos_principales','mps','ordenes_trabajo','planeacion','inventarios','personal'] };
@@ -310,7 +310,14 @@ async function renderDashboard() {
       </div>
     </div>`;
 
-  const data = State.useMock ? API.getMockDashboard() : await API.getDashboard().catch(() => API.getMockDashboard());
+  let data;
+  try {
+    data = State.useMock ? API.getMockDashboard() : await API.getDashboard();
+  } catch (e) {
+    console.error("Dashboard error:", e);
+    data = API.getMockDashboard();
+    toast('Usando datos locales (error de conexión)', 'warning');
+  }
 
   document.getElementById('kpiGrid').innerHTML = `
     <div class="kpi-card" style="--kpi-color:#0070f2" onclick="navigate('Ordenes_de_Trabajo')">
