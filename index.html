@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMMS Enterprise</title>
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════ SHELL BAR ═══════════════════════════════ -->
+<header class="shell-bar">
+  <div class="shell-left">
+    <button class="menu-toggle" id="menuToggle" onclick="toggleNav()" title="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="shell-logo">
+      <span class="logo-icon">⚙</span>
+      <div class="logo-text">
+        <span class="logo-main">CMMS</span>
+        <span class="logo-sub">Enterprise</span>
+      </div>
+    </div>
+    <div class="shell-divider"></div>
+    <span class="shell-context" id="shellContext">Dashboard</span>
+  </div>
+  <div class="shell-right">
+    <div id="connStatus" class="conn-status" style="display:flex;align-items:center;gap:8px;margin-right:15px;font-size:11px;font-weight:600">
+      <span class="status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text-dim)"></span>
+      <span class="status-text" style="color:var(--text-dim)">VERIFICANDO...</span>
+    </div>
+    <div class="shell-search">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M15.7 14.3l-4.2-4.2A6 6 0 1 0 0 6a6 6 0 0 0 9.5 4.9l4.2 4.2 2-2.8zM6 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
+      <input type="text" placeholder="Buscar..." id="globalSearch" oninput="onGlobalSearch(this.value)">
+    </div>
+    <button class="shell-btn" onclick="showNotifications()" title="Notificaciones">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16c1.1 0 2-.9 2-2H6c0 1.1.9 2 2 2zm6-3H2v-1l2-2V6c0-2.8 1.7-5.1 4-5.8V0h0C8 0 8 0 8 0s0 0 0 0h0v.2C10.3.9 12 3.2 12 6v4l2 2v1z"/></svg>
+      <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+    </button>
+    <div class="shell-avatar" title="Usuario">U</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ LAYOUT ════════════════════════════════ -->
+<div class="app-layout">
+
+  <!-- LEFT NAV -->
+  <nav class="side-nav" id="sideNav">
+    <div class="nav-section-label">Módulos</div>
+
+    <a class="nav-item active" data-module="dashboard" onclick="navigate('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    <div class="nav-group">
+      <div class="nav-group-hdr" onclick="toggleGroup('admin')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Administración</span>
+        <span class="nav-arrow" id="arr-admin">›</span>
+      </div>
+      <div class="nav-group-body" id="grp-admin">
+        <a class="nav-item nav-sub" onclick="navigate('Ubicaciones')">Ubicaciones</a>
+        <a class="nav-item nav-sub" onclick="navigate('Especialidades')">Especialidades</a>
+        <a class="nav-item nav-sub" onclick="navigate('Personal')">Personal</a>
+        <a class="nav-item nav-sub" onclick="navigate('Catalogo')">Catálogo</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-hdr" onclick="toggleGroup('hier')">
+        <span class="nav-icon">🏢</span>
+        <span class="nav-label">Gestión de Activos</span>
+        <span class="nav-arrow" id="arr-hier">›</span>
+      </div>
+      <div class="nav-group-body" id="grp-hier">
+        <a class="nav-item nav-sub" onclick="navigate('empresas')">🏢 Empresas</a>
+        <a class="nav-item nav-sub" onclick="navigate('sitios')">🏗 Sitios / Plantas</a>
+        <a class="nav-item nav-sub" onclick="navigate('unidades_negocio')">🏛 Unidades Negocio</a>
+        <a class="nav-item nav-sub" onclick="navigate('ubicaciones')">📍 Ubicaciones</a>
+        <a class="nav-item nav-sub" onclick="navigate('procesos')">⚙ Procesos</a>
+        <a class="nav-item nav-sub" onclick="navigate('activos_principales')">🏭 Activos Principales</a>
+        <a class="nav-item nav-sub" onclick="navigate('sub_activos')">🔧 Sub-Activos</a>
+        <a class="nav-item nav-sub" onclick="navigate('sistemas')">🔩 Sistemas</a>
+        <a class="nav-item nav-sub" onclick="navigate('componentes')">⚙ Componentes</a>
+        <a class="nav-item nav-sub" onclick="navigate('despiece')">📐 Despiece</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-hdr" onclick="toggleGroup('plan')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Planeación</span>
+        <span class="nav-arrow" id="arr-plan">›</span>
+      </div>
+      <div class="nav-group-body" id="grp-plan">
+        <a class="nav-item nav-sub" onclick="navigate('calendario')">🗓 Calendario OT</a>
+        <a class="nav-item nav-sub" onclick="navigate('gantt')">📊 Diagrama Gantt</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-hdr" onclick="toggleGroup('manto')">
+        <span class="nav-icon">🔧</span>
+        <span class="nav-label">Mantenimiento</span>
+        <span class="nav-arrow" id="arr-manto">›</span>
+      </div>
+      <div class="nav-group-body" id="grp-manto">
+        <a class="nav-item nav-sub" onclick="navigate('mps')">📅 Planes MP</a>
+        <a class="nav-item nav-sub" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</a>
+        <a class="nav-item nav-sub" onclick="navigate('ordenes_en_proceso')" style="color:var(--yellow-lt);font-weight:600">▶ OTs en Proceso</a>
+        <a class="nav-item nav-sub" onclick="navigate('planes_seguridad')">🛡 Planes Seguridad</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-hdr" onclick="toggleGroup('inv')">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Almacén e Inventarios</span>
+        <span class="nav-arrow" id="arr-inv">›</span>
+      </div>
+      <div class="nav-group-body" id="grp-inv">
+        <a class="nav-item nav-sub" onclick="navigate('catalogo')">📚 Catálogo de Partes</a>
+        <a class="nav-item nav-sub" onclick="navigate('inventarios')">📦 Stock / Inventario</a>
+        <a class="nav-item nav-sub" onclick="navigate('entradas')">📥 Entradas / Recepción</a>
+        <a class="nav-item nav-sub" onclick="navigate('orden_de_compra')">🛒 Órdenes de Compra</a>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-hdr" onclick="toggleGroup('serv')">
+        <span class="nav-icon">🤝</span>
+        <span class="nav-label">Recursos y Servicios</span>
+        <span class="nav-arrow" id="arr-serv">›</span>
+      </div>
+      <div class="nav-group-body" id="grp-serv">
+        <a class="nav-item nav-sub" onclick="navigate('personal')">👤 Personal Técnico</a>
+        <a class="nav-item nav-sub" onclick="navigate('especialidades')">🎓 Especialidades</a>
+        <a class="nav-item nav-sub" onclick="navigate('servicios_contratistas')">🏢 Contratistas Externos</a>
+      </div>
+    </div>
+
+    <div class="nav-bottom">
+      <div class="nav-section-label">Sistema</div>
+      <a class="nav-item" onclick="navigate('configuracion')">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Configuración</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="mainContent">
+    <!-- Content injected by JS -->
+  </main>
+
+</div>
+
+<!-- ═══════════════════════════════ MODAL ════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="modal-header">
+    <h2 class="modal-title" id="modalTitle">Nuevo Registro</h2>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveRecord()" id="btnSave">Guardar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script src="js/schema.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
