@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (savedUser) {
     State.user = JSON.parse(savedUser);
     applyPermissions();
-    renderShell();
+    // Si ya estamos logueados, el HTML base ya tiene el shell
     navigate('dashboard');
   } else {
     renderLogin();
@@ -50,11 +50,11 @@ function renderLogin() {
         <div class="modal-body" style="padding:30px">
           <div class="form-field">
             <label class="form-label">Usuario</label>
-            <input type="text" id="login-user" class="form-input" placeholder="admin / supervisor / tecnico">
+            <input type="text" id="login-user" class="form-input" placeholder="admin / supervisor / tecnico" onkeypress="if(event.key==='Enter')handleLogin()">
           </div>
           <div class="form-field" style="margin-top:20px">
             <label class="form-label">Contraseña</label>
-            <input type="password" id="login-pass" class="form-input" placeholder="••••••">
+            <input type="password" id="login-pass" class="form-input" placeholder="••••••" onkeypress="if(event.key==='Enter')handleLogin()">
           </div>
           <button class="btn btn-primary" style="width:100%; margin-top:30px; padding:12px" onclick="handleLogin()">INICIAR SESIÓN</button>
         </div>
@@ -65,7 +65,6 @@ function renderLogin() {
 async function handleLogin() {
   const u = document.getElementById('login-user').value.toLowerCase();
   
-  // DEMO DE ROLES (En producción consultar tabla 'usuarios' + 'roles')
   if (u === 'admin') {
     State.user = { id: '1', nombre: 'Super Admin', role: 'Super Admin' };
   } else if (u === 'supervisor') {
@@ -77,7 +76,7 @@ async function handleLogin() {
   }
 
   localStorage.setItem('cmms_user', JSON.stringify(State.user));
-  location.reload();
+  location.reload(); // Corregido: Ahora sí es una función
 }
 
 function applyPermissions() {
@@ -87,15 +86,10 @@ function applyPermissions() {
   if (r === 'Super Admin') {
     State.permissions = { canDelete: true, allowedViews: ['*'] };
   } else if (r === 'Supervisor') {
-    State.permissions = { canDelete: false, allowedViews: ['dashboard','activos','manto','planeacion','inventarios','personal'] };
+    State.permissions = { canDelete: false, allowedViews: ['dashboard','activos_principales','mps','ordenes_trabajo','planeacion','inventarios','personal'] };
   } else {
-    State.permissions = { canDelete: false, allowedViews: ['dashboard','manto','planeacion','calendario','gantt'] };
+    State.permissions = { canDelete: false, allowedViews: ['dashboard','mps','ordenes_trabajo','planeacion','calendario','gantt'] };
   }
-}
-
-function renderShell() {
-  // Solo restaurar el shell original que está en el HTML si estamos logueados
-  location.reload; // El HTML base ya tiene el shell, pero el login lo sobreescribió
 }
 
 function logout() {
