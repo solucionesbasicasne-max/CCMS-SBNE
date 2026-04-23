@@ -228,7 +228,10 @@
       {key: "especialidad", label: "Especialidad"}, {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]},
     usuarios: { label: "Configuración de Perfiles", group: "Sistema", icon: "🔑", fields: [
-      {key: "id", pk: true, hidden: true}, {key: "username", label: "Usuario"}, {key: "nombre_completo", label: "Nombre Completo"},
+      {key: "id", pk: true, hidden: true}, 
+      {key: "username", label: "Usuario"}, 
+      {key: "password", label: "Contraseña", type: "password"},
+      {key: "nombre_completo", label: "Nombre Completo"},
       {key: "role", label: "Rol", type: "select", options: ["Admin", "Supervisor", "Técnico"]},
       {key: "estado", label: "Estado", type: "select", options: ["Activo","Inactivo"]}
     ]}
@@ -277,22 +280,29 @@
 
   async function login() {
     const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value.trim();
     if (!u) return alert("Ingrese un usuario");
     try {
       const users = await api(`usuarios?username=eq.${u}`);
       if (users && users.length > 0) {
         const user = users[0];
+        if (user.password && user.password !== p) {
+          return alert("Contraseña incorrecta.");
+        }
         State.user = { nombre: user.nombre_completo || user.username, role: user.role, username: user.username };
         localStorage.setItem('cmms_user', JSON.stringify(State.user));
         location.reload();
-      } else if (u.toLowerCase() === 'admin') {
+      } else if (u.toLowerCase() === 'admin' && p === 'admin') {
         State.user = { nombre: 'Super Admin', role: 'Admin', username: 'admin' };
         localStorage.setItem('cmms_user', JSON.stringify(State.user));
         location.reload();
       } else {
-        alert("Usuario no encontrado.");
+        alert("Usuario no encontrado o contraseña incorrecta.");
       }
-    } catch(e) { alert("Error al validar usuario."); }
+    } catch(e) { 
+      console.error(e);
+      alert("Error al validar usuario. Verifique su base de datos."); 
+    }
   }
   function logout() { localStorage.removeItem('cmms_user'); location.reload(); }
 
@@ -318,7 +328,8 @@
           <div class="modal-body">
             <h2 style="margin-bottom:10px; font-size:24px; font-weight:800"><span style="color:#3b82f6">CMMS</span> ENTERPRISE</h2>
             <p style="color:var(--text-dim); font-size:13px; margin-bottom:30px">Ingreso al Sistema de Mantenimiento</p>
-            <input type="text" id="login-user" class="form-input" style="margin-bottom:20px; padding:15px" placeholder="Usuario (admin / tecnico)" onkeypress="if(event.key==='Enter')login()">
+            <input type="text" id="login-user" class="form-input" style="margin-bottom:10px; padding:15px" placeholder="Usuario">
+            <input type="password" id="login-pass" class="form-input" style="margin-bottom:20px; padding:15px" placeholder="Contraseña" onkeypress="if(event.key==='Enter')login()">
             <button class="btn btn-primary" style="width:100%; padding:15px; font-size:15px" onclick="login()">Acceder al Portal</button>
           </div>
         </div>
