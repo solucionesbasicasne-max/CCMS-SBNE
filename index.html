@@ -282,14 +282,25 @@
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value.trim();
     if (!u) return alert("Ingrese un usuario");
+    
     try {
-      const users = await api(`usuarios?username=eq.${u}`);
+      // Usamos 'ilike' para búsqueda insensible a mayúsculas
+      const users = await api(`usuarios?username=ilike.${u}`);
+      console.log("Usuarios encontrados:", users);
+      
       if (users && users.length > 0) {
         const user = users[0];
+        
+        // Verificación de contraseña
         if (user.password && user.password !== p) {
-          return alert("Contraseña incorrecta.");
+          return alert("❌ Contraseña incorrecta para el usuario " + u);
         }
-        State.user = { nombre: user.nombre_completo || user.username, role: user.role, username: user.username };
+        
+        State.user = { 
+          nombre: user.nombre_completo || user.username, 
+          role: user.role || 'Técnico', 
+          username: user.username 
+        };
         localStorage.setItem('cmms_user', JSON.stringify(State.user));
         location.reload();
       } else if (u.toLowerCase() === 'admin' && p === 'admin') {
@@ -297,11 +308,11 @@
         localStorage.setItem('cmms_user', JSON.stringify(State.user));
         location.reload();
       } else {
-        alert("Usuario no encontrado o contraseña incorrecta.");
+        alert("🚫 Usuario '" + u + "' no encontrado en la base de datos.");
       }
     } catch(e) { 
-      console.error(e);
-      alert("Error al validar usuario. Verifique su base de datos."); 
+      console.error("Error login:", e);
+      alert("⚠️ Error de conexión: " + e.message); 
     }
   }
   function logout() { localStorage.removeItem('cmms_user'); location.reload(); }
