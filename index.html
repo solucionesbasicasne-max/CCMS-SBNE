@@ -34,6 +34,13 @@
   .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 15px; color: var(--text-dim); text-decoration: none; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 2px; transition: .2s; font-weight: 500; }
   .nav-item:hover { background: var(--surface2); color: #fff; }
   .nav-item.active { background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-weight: 600; border-left: 3px solid #3b82f6; }
+  .nav-item i { font-style: normal; width: 20px; display: inline-block; text-align: center; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
   /* DASHBOARD KPI */
   .dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
@@ -238,7 +245,8 @@
 
   // ── MOTOR API ─────────────────────────────────
   async function api(path, method = 'GET', body = null) {
-    const url = `${CONFIG.url}${path.toLowerCase()}?select=*`;
+    const hasQuery = path.includes('?');
+    const url = `${CONFIG.url}${path.toLowerCase()}${hasQuery ? '&select=*' : '?select=*'}`;
     const headers = { 'apikey': CONFIG.key, 'Authorization': `Bearer ${CONFIG.key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
     const opts = { method, headers };
     if (body) opts.body = JSON.stringify(body);
@@ -264,12 +272,36 @@
     };
   }
 
-  function login() {
-    const u = document.getElementById('login-user').value.toLowerCase();
-    if (u === 'admin') State.user = { nombre: 'Super Admin', role: 'Admin' };
-    else State.user = { nombre: 'Técnico', role: 'Técnico' };
-    localStorage.setItem('cmms_user', JSON.stringify(State.user));
-    location.reload();
+  async function login() {
+    const u = document.getElementById('login-user').value.trim();
+    if (!u) return alert("Ingrese un usuario");
+    
+    try {
+      // Intentamos buscar el usuario en la tabla 'usuarios'
+      const users = await api(`usuarios?username=eq.${u}`);
+      if (users && users.length > 0) {
+        const user = users[0];
+        State.user = { 
+          nombre: user.nombre_completo || user.username, 
+          role: user.role, 
+          username: user.username 
+        };
+        localStorage.setItem('cmms_user', JSON.stringify(State.user));
+        location.reload();
+      } else {
+        // Fallback para el admin inicial si la tabla está vacía
+        if (u.toLowerCase() === 'admin') {
+          State.user = { nombre: 'Super Admin', role: 'Admin', username: 'admin' };
+          localStorage.setItem('cmms_user', JSON.stringify(State.user));
+          location.reload();
+        } else {
+          alert("Usuario no encontrado en la base de datos.");
+        }
+      }
+    } catch(e) {
+      console.error(e);
+      alert("Error al validar usuario. Verifique su conexión y configuración de Supabase.");
+    }
   }
   function logout() { localStorage.removeItem('cmms_user'); location.reload(); }
 
@@ -314,44 +346,44 @@
       </header>
       <div class="app-layout">
         <nav class="side-nav">
-          <div class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')">📊 Dashboard KPI</div>
+          <div class="nav-item" id="nav-dashboard" onclick="navigate('dashboard')"><i>📊</i> Dashboard KPI</div>
+          <div class="nav-item" id="nav-planes_seguridad" onclick="navigate('planes_seguridad')"><i>🛡</i> Planes de Seguridad</div>
           
           <div class="nav-group-hdr" onclick="toggleNav('nav-mantenimiento')">MANTENIMIENTO <span>▼</span></div>
-          <div id="nav-mantenimiento" class="nav-dropdown" style="max-height:1000px">
-            <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')">📋 Órdenes de Trabajo</div>
-            <div class="nav-item" id="nav-mps" onclick="navigate('mps')">📅 Planes de MP</div>
-            <div class="nav-item" id="nav-planes_seguridad" onclick="navigate('planes_seguridad')">🛡 Planes de Seguridad</div>
+          <div id="nav-mantenimiento" class="nav-dropdown">
+            <div class="nav-item" id="nav-ordenes_trabajo" onclick="navigate('ordenes_trabajo')"><i>📋</i> Órdenes de Trabajo</div>
+            <div class="nav-item" id="nav-mps" onclick="navigate('mps')"><i>📅</i> Planes de MP</div>
           </div>
 
           <div class="nav-group-hdr" onclick="toggleNav('nav-jerarquia')">JERARQUÍA DE ACTIVOS <span>▼</span></div>
-          <div id="nav-jerarquia" class="nav-dropdown" style="max-height:1000px">
-            <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')">🏭 Activos Principales</div>
-            <div class="nav-item" id="nav-sub_activos" onclick="navigate('sub_activos')">🔧 Sub-Activos</div>
-            <div class="nav-item" id="nav-sistemas" onclick="navigate('sistemas')">🔩 Sistemas</div>
-            <div class="nav-item" id="nav-componentes" onclick="navigate('componentes')">⚙ Componentes</div>
-            <div class="nav-item" id="nav-despiece" onclick="navigate('despiece')">📐 Despiece</div>
-            <div class="nav-item" id="nav-procesos" onclick="navigate('procesos')">⚙ Procesos</div>
-            <div class="nav-item" id="nav-ubicaciones" onclick="navigate('ubicaciones')">📍 Ubicaciones</div>
-            <div class="nav-item" id="nav-unidades_negocio" onclick="navigate('unidades_negocio')">🏛 Unidades Negocio</div>
-            <div class="nav-item" id="nav-sitios" onclick="navigate('sitios')">🏗 Sitios / Plantas</div>
-            <div class="nav-item" id="nav-empresas" onclick="navigate('empresas')">🏢 Empresas</div>
+          <div id="nav-jerarquia" class="nav-dropdown">
+            <div class="nav-item" id="nav-activos_principales" onclick="navigate('activos_principales')"><i>🏭</i> Activos Principales</div>
+            <div class="nav-item" id="nav-sub_activos" onclick="navigate('sub_activos')"><i>🔧</i> Sub-Activos</div>
+            <div class="nav-item" id="nav-sistemas" onclick="navigate('sistemas')"><i>🔩</i> Sistemas</div>
+            <div class="nav-item" id="nav-componentes" onclick="navigate('componentes')"><i>⚙</i> Componentes</div>
+            <div class="nav-item" id="nav-despiece" onclick="navigate('despiece')"><i>📐</i> Despiece</div>
+            <div class="nav-item" id="nav-procesos" onclick="navigate('procesos')"><i>⚙</i> Procesos</div>
+            <div class="nav-item" id="nav-ubicaciones" onclick="navigate('ubicaciones')"><i>📍</i> Ubicaciones</div>
+            <div class="nav-item" id="nav-unidades_negocio" onclick="navigate('unidades_negocio')"><i>🏛</i> Unidades Negocio</div>
+            <div class="nav-item" id="nav-sitios" onclick="navigate('sitios')"><i>🏗</i> Sitios / Plantas</div>
+            <div class="nav-item" id="nav-empresas" onclick="navigate('empresas')"><i>🏢</i> Empresas</div>
           </div>
 
           <div class="nav-group-hdr" onclick="toggleNav('nav-logistica')">LOGÍSTICA Y COMPRAS <span>▼</span></div>
-          <div id="nav-logistica" class="nav-dropdown" style="max-height:1000px">
-            <div class="nav-item" id="nav-orden_de_compra" onclick="navigate('orden_de_compra')">🛒 Órdenes de Compra</div>
+          <div id="nav-logistica" class="nav-dropdown">
+            <div class="nav-item" id="nav-orden_de_compra" onclick="navigate('orden_de_compra')"><i>🛒</i> Órdenes de Compra</div>
           </div>
 
           <div class="nav-group-hdr" onclick="toggleNav('nav-recursos')">RECURSOS HUMANOS <span>▼</span></div>
-          <div id="nav-recursos" class="nav-dropdown" style="max-height:1000px">
-            <div class="nav-item" id="nav-personal" onclick="navigate('personal')">👤 Personal Técnico</div>
-            <div class="nav-item" id="nav-especialidades" onclick="navigate('especialidades')">🎓 Especialidades</div>
-            <div class="nav-item" id="nav-servicios_contratistas" onclick="navigate('servicios_contratistas')">🏢 Contratistas Externos</div>
+          <div id="nav-recursos" class="nav-dropdown">
+            <div class="nav-item" id="nav-personal" onclick="navigate('personal')"><i>👤</i> Personal Técnico</div>
+            <div class="nav-item" id="nav-especialidades" onclick="navigate('especialidades')"><i>🎓</i> Especialidades</div>
+            <div class="nav-item" id="nav-servicios_contratistas" onclick="navigate('servicios_contratistas')"><i>🏢</i> Contratistas Externos</div>
           </div>
 
           <div class="nav-group-hdr" onclick="toggleNav('nav-sistema')">CONFIGURACIÓN <span>▼</span></div>
-          <div id="nav-sistema" class="nav-dropdown" style="max-height:1000px">
-            <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')">🔑 Perfiles de Usuario</div>
+          <div id="nav-sistema" class="nav-dropdown">
+            <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')"><i>🔑</i> Perfiles de Usuario</div>
           </div>
         </nav>
         <main class="main-content" id="main-content"></main>
@@ -392,7 +424,7 @@
           <table>
             <thead><tr><th>Nº OT</th><th>Tipo</th><th>Estado</th></tr></thead>
             <tbody>
-              ${ots.slice(0,5).map(o => `<tr><td>${o.numero_ot||'—'}</td><td>${o.tipo_ot||'—'}</td><td><span class="badge badge-blue">${o.estado||'—'}</span></td></tr>`).join('')}
+              ${ots.slice(0,5).map(o => `<tr onclick="navigate('ordenes_trabajo')" style="cursor:pointer"><td>${o.numero_ot||'—'}</td><td>${o.tipo_ot||'—'}</td><td><span class="badge badge-blue">${o.estado||'—'}</span></td></tr>`).join('')}
             </tbody>
           </table>
         </div>`;
